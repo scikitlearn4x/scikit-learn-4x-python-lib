@@ -2,6 +2,8 @@ from unittest import TestCase
 
 from typing import List
 
+import numpy as np
+
 from sklearn4x.core.BinaryBuffer import BinaryBuffer
 
 
@@ -90,4 +92,120 @@ class TestBinaryBuffer(TestCase):
         data = list(buffer.to_buffer())
         test_array_similarity(self, data, expected)
 
+    def test_append_byte_positive(self) -> None:
+        buffer = BinaryBuffer()
+        buffer.append_byte(23)
 
+        expected = [23]
+        data = list(buffer.to_buffer())
+        test_array_similarity(self, data, expected)
+
+    def test_append_byte_negative(self) -> None:
+        buffer = BinaryBuffer()
+        buffer.append_byte(-8)
+
+        expected = [248]
+        data = list(buffer.to_buffer())
+        test_array_similarity(self, data, expected)
+
+    def test_append_short_values(self):
+        examples = [
+            (10, [10, 0]),
+            (567, [55, 2]),
+            (16000, [-128, 62]),
+            (-16000, [-128, -63]),
+        ]
+
+        for number, expected_output in examples:
+            buffer = BinaryBuffer()
+            buffer.append_short(number)
+
+            data = list(buffer.to_buffer())
+            test_array_similarity(self, data, expected_output)
+
+    def test_append_int_values(self):
+        examples = [
+            (10, [10, 0, 0, 0]),
+            (567, [55, 2, 0, 0]),
+            (16000, [-128, 62, 0, 0]),
+            (59, [59, 0, 0, 0]),
+            (-59, [-59, -1, -1, -1]),
+            (300, [44, 1, 0, 0]),
+            (-300, [-44, -2, -1, -1]),
+            (2000000000, [0, -108, 53, 119]),
+            (-2000000000, [0, 108, -54, -120]),
+        ]
+
+        for number, expected_output in examples:
+            buffer = BinaryBuffer()
+            buffer.append_int(number)
+
+            data = list(buffer.to_buffer())
+            test_array_similarity(self, data, expected_output)
+
+    def test_append_long_values(self):
+        examples = [
+            (10, [10, 0, 0, 0, 0, 0, 0, 0]),
+            (567, [55, 2, 0, 0, 0, 0, 0, 0]),
+            (16000, [-128, 62, 0, 0, 0, 0, 0, 0]),
+            (59, [59, 0, 0, 0, 0, 0, 0, 0]),
+            (-59, [-59, -1, -1, -1, -1, -1, -1, -1]),
+            (300, [44, 1, 0, 0, 0, 0, 0, 0]),
+            (-300, [-44, -2, -1, -1, -1, -1, -1, -1]),
+            (2000000000, [0, -108, 53, 119, 0, 0, 0, 0]),
+            (-2000000000, [0, 108, -54, -120, -1, -1, -1, -1]),
+            (200000000000000000, [0, 0, 20, -69, -16, -118, -58, 2]),
+            (-200000000000000000, [0, 0, -20, 68, 15, 117, 57, -3]),
+        ]
+
+        for number, expected_output in examples:
+            buffer = BinaryBuffer()
+            buffer.append_long(number)
+
+            data = list(buffer.to_buffer())
+            test_array_similarity(self, data, expected_output)
+
+    def test_append_simple_null_numpy_array(self):
+        buffer = BinaryBuffer()
+        buffer.append_numpy_array(None)
+
+        data = buffer.to_buffer()
+        expected = [0]
+
+        test_array_similarity(self, data, expected)
+
+    def test_append_simple_numpy_array(self):
+        array = np.array([6, 7], dtype=np.uint8)
+        buffer = BinaryBuffer()
+        buffer.append_numpy_array(array)
+
+        data = buffer.to_buffer()
+        expected = [1, 1, 0, 0, 0, 17, 2, 0, 0, 0, 6, 7]
+        test_array_similarity(self, data, expected)
+
+    def test_append_vertical_numpy_array(self):
+        array = np.array([[6], [7]], dtype=np.uint8)
+        buffer = BinaryBuffer()
+        buffer.append_numpy_array(array)
+
+        data = buffer.to_buffer()
+        expected = [1, 2, 0, 0, 0, 17, 2, 0, 0, 0, 1, 0, 0, 0, 6, 7]
+        test_array_similarity(self, data, expected)
+
+    def test_append_vertical_numpy_array_of_type_int(self):
+        array = np.array([[6], [7]], dtype=np.int32)
+        buffer = BinaryBuffer()
+        buffer.append_numpy_array(array)
+
+        data = buffer.to_buffer()
+        expected = [1, 2, 0, 0, 0, 4, 2, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0]
+        test_array_similarity(self, data, expected)
+
+    def test_append_3dim_tensor_numpy_array_of_type_int(self):
+        array = np.array([[[6], [7]], [[8], [9]]], dtype=np.int32)
+        buffer = BinaryBuffer()
+        buffer.append_numpy_array(array)
+
+        data = buffer.to_buffer()
+        expected = [1, 3, 0, 0, 0, 4, 2, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0]
+        test_array_similarity(self, data, expected)
