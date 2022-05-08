@@ -1,0 +1,2 @@
+setup-py-upgrade==1.2.1
+twine==4.0.0
