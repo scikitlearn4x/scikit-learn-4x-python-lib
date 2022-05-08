@@ -1,3 +1,7 @@
+.idea/
+
 build/
 dist/
 sklearn4x.egg-info/
+
+**/__pycache__/
