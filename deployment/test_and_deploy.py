@@ -1,6 +1,8 @@
 import os
+import sys
 import shutil
 import subprocess
+from time import sleep
 
 CONDA_ENV_FOR_LIB = 'develop_xklearn_lib'
 CONDA_ENV_FOR_LIB_VERSION = '3.8'
@@ -34,6 +36,23 @@ def ensure_git_all_changes_committed():
 
 
 def main():
+    args = sys.argv
+
+    if '--test-only' in args:
+        test_library_on_all_python_versions()
+    else:
+        full_deployment_script()
+
+
+def test_library_on_all_python_versions():
+    environments = create_conda_environments()
+
+    console_print('Testing library on all available Python versions.')
+    for environment in environments:
+        test_library_in_environment(environment, True)
+
+
+def full_deployment_script():
     ensure_script_is_called_from_root()
     ensure_pypi_credential_exists()
     ensure_git_all_changes_committed()
@@ -46,7 +65,7 @@ def main():
     python_errors = []
     console_print('Testing library on all available Python versions.')
     for environment in environments:
-        passed, version = test_library_in_environment(environment)
+        passed, version = test_library_in_environment(environment, False)
         if not passed:
             all_passed = False
             python_errors.append(version)
@@ -56,7 +75,7 @@ def main():
         ensure_archive_has_source_only_folders(lib_version)
         deploy_archives_to_pypi()
 
-        # delete_build_folders()
+        delete_build_folders()
     else:
         console_print('The following environment(s) failed unit tests:')
         for python_version in python_errors:
@@ -270,7 +289,7 @@ def install_packages(environment_info):
         run_command_for_output(environment_info.get_pip() + ' install ' + package)
 
 
-def test_library_in_environment(environment):
+def test_library_in_environment(environment, throw_exception):
     all_tests_passed = True
     environment_info = get_conda_environments()[environment]
     console_print(f'    * Testing library on Python {environment_info.python_version}')
@@ -280,11 +299,15 @@ def test_library_in_environment(environment):
     unit_tests = run_command_for_output(environment_info.get_python() + ' tests/run_tests.py')
 
     if 'All Tests Passed!' not in unit_tests:
+        if throw_exception:
+            raise Exception(f'The unit tests failed on python {environment_info.python_version} [{environment_info.name}]')
         all_tests_passed = False
     else:
         passed = unit_tests[1]
         if passed.endswith(' 0'):
             console_print('        - No test found at all')
+            if throw_exception:
+                raise Exception(f'No unit tests found on python {environment_info.python_version} [{environment_info.name}]')
             all_tests_passed = False
 
     integration_root = './tests/integration_tests/'
@@ -296,6 +319,8 @@ def test_library_in_environment(environment):
     for integration_test in integration_tests:
         script = subprocess.run([environment_info.get_python(), integration_test], stdout=subprocess.PIPE)
         if script.returncode != 0:
+            if throw_exception:
+                raise Exception(f'The integration test "{integration_test}" failed on python {environment_info.python_version} [{environment_info.name}]')
             all_tests_passed = False
 
     return all_tests_passed, major_minor_version(environment_info.python_version)
@@ -342,9 +367,16 @@ def ensure_archive_has_source_only_folders(lib_version):
 
 
 def deploy_archives_to_pypi():
+    console_print('Deploying the library to pypi.org')
     output = run_command_for_output('twine upload dist/*')
-    for line in output:
-        print(line)
+
+    for i, line in enumerate(output):
+        if 'ERROR' in line:
+            console_print(line)
+            sleep(2)
+            raise Exception('An error happened during deploying to pypi.org')
+        elif 'View at:' in line:
+            console_print('   * Successfully deployed to: ' + output[i + 1])
 
 
 def find_all_ds_store_files(folder, ds_stores):
