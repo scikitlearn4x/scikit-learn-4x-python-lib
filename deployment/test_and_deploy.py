@@ -29,6 +29,7 @@ class CondaEnvironment:
 
 def main():
     ensure_script_is_called_from_root()
+    ensure_pypi_credential_exists()
     delete_all_macos_ds_store_files()
     delete_build_folders()
     lib_version = load_library_version()
@@ -54,6 +55,14 @@ def main():
         for python_version in python_errors:
             console_print('    * ' + python_version)
         exit(1)
+
+def ensure_pypi_credential_exists():
+    console_print('Checking ~/.pypirc')
+    path = os.path.expanduser('~/.pypirc')
+    if not os.path.exists(path):
+        # Reference to make the file:
+        # https://zestreleaser.readthedocs.io/en/latest/uploading.html
+        raise Exception('The ~/.pypirc is missing. Please make a file according to https://zestreleaser.readthedocs.io/en/latest/uploading.html')
 
 
 def delete_build_folders():
@@ -303,16 +312,31 @@ def build_library_for_pypi():
 def ensure_archive_has_source_only_folders(lib_version):
     console_print('Validating the distribution archive')
     archive_path = f'./dist/sklearn4x-{lib_version}.tar.gz'
-    extract_path = f'./dist/sklearn4x-{lib_version}/'
+    extract_path = f'dist/'
     if not os.path.exists(archive_path):
         raise Exception('Unable to find the distribution archive to upload to pypi.org')
 
+    archive_path = archive_path[2:]
     run_command_for_output(f'tar -xf {archive_path} -C {extract_path}')
+
+    extract_path = f'./dist/sklearn4x-{lib_version}'
+    included_files = set(os.listdir(extract_path))
+    expected_files = {'setup.py', 'sklearn4x', 'PKG-INFO', 'LICENSE', 'setup.cfg', 'sklearn4x.egg-info', 'README.md'}
+
+    if len(included_files) != len(expected_files):
+        raise Exception('The final archive contains files that are for development only.')
+
+    additional = included_files - expected_files
+    if len(additional) != 0:
+        raise Exception('The final archive contains files that are for development only.')
+
+    shutil.rmtree(extract_path)
 
 
 def deploy_archives_to_pypi():
-    pass
-
+    output = run_command_for_output('twine upload dist/*')
+    for line in output:
+        print(line)
 
 def find_all_ds_store_files(folder, ds_stores):
     contents = os.listdir(folder)
