@@ -27,9 +27,16 @@ class CondaEnvironment:
         return self.path + '/bin/pip'
 
 
+def ensure_git_all_changes_committed():
+    output = run_command_for_output('git status')
+    if 'nothing to commit, working tree clean' not in output:
+        raise Exception('Please commit all changes before running this script.')
+
+
 def main():
     ensure_script_is_called_from_root()
     ensure_pypi_credential_exists()
+    ensure_git_all_changes_committed()
     delete_all_macos_ds_store_files()
     delete_build_folders()
     lib_version = load_library_version()
@@ -55,6 +62,7 @@ def main():
         for python_version in python_errors:
             console_print('    * ' + python_version)
         exit(1)
+
 
 def ensure_pypi_credential_exists():
     console_print('Checking ~/.pypirc')
@@ -337,6 +345,7 @@ def deploy_archives_to_pypi():
     output = run_command_for_output('twine upload dist/*')
     for line in output:
         print(line)
+
 
 def find_all_ds_store_files(folder, ds_stores):
     contents = os.listdir(folder)
