@@ -68,7 +68,15 @@ class BinaryBuffer:
         self.__data.append(struct.pack('l', value))
 
     def __append_number(self, value, fmt) -> None:
-        self.__data.append(struct.pack(fmt, value))
+        if fmt in  ['d', 'f']:
+            # This is a float value and may be NaN
+            if np.isnan(value):
+                self.append_byte(0)
+            else:
+                self.append_byte(1)
+                self.__data.append(struct.pack(fmt, value))
+        else:
+            self.__data.append(struct.pack(fmt, value))
 
     def append_numpy_array(self, value: np.ndarray) -> None:
         if value is None:

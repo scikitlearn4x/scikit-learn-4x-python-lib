@@ -208,7 +208,6 @@ class TestBinaryBuffer(TestCase):
 
         test_array_similarity(self, data, expected)
 
-
     def test_append_simple_null_numpy_array(self):
         buffer = BinaryBuffer()
         buffer.append_numpy_array(None)
@@ -218,13 +217,58 @@ class TestBinaryBuffer(TestCase):
 
         test_array_similarity(self, data, expected)
 
-    def test_append_simple_numpy_array(self):
+    def test_append_simple_uint8_numpy_array(self):
         array = np.array([6, 7], dtype=np.uint8)
         buffer = BinaryBuffer()
         buffer.append_numpy_array(array)
 
         data = buffer.to_buffer()
         expected = [1, 1, 0, 0, 0, 17, 2, 0, 0, 0, 6, 7]
+        test_array_similarity(self, data, expected)
+
+    def test_append_simple_uint16_numpy_array(self):
+        array = np.array([6, 7], dtype=np.uint16)
+        buffer = BinaryBuffer()
+        buffer.append_numpy_array(array)
+
+        data = buffer.to_buffer()
+        expected = [1, 1, 0, 0, 0, 18, 2, 0, 0, 0, 6, 0, 7, 0]
+        test_array_similarity(self, data, expected)
+
+    def test_append_simple_uint32_numpy_array(self):
+        array = np.array([6, 7], dtype=np.uint32)
+        buffer = BinaryBuffer()
+        buffer.append_numpy_array(array)
+
+        data = buffer.to_buffer()
+        expected = [1, 1, 0, 0, 0, 20, 2, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0]
+        test_array_similarity(self, data, expected)
+
+    def test_append_simple_uint64_numpy_array(self):
+        array = np.array([6, 7], dtype=np.uint64)
+        buffer = BinaryBuffer()
+        buffer.append_numpy_array(array)
+
+        data = buffer.to_buffer()
+        expected = [1, 1, 0, 0, 0, 24, 2, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0]
+        test_array_similarity(self, data, expected)
+
+    def test_append_simple_float_numpy_array(self):
+        array = np.array([6, 7, np.nan], dtype=np.float32)
+        buffer = BinaryBuffer()
+        buffer.append_numpy_array(array)
+
+        data = buffer.to_buffer()
+        expected = [1, 1, 0, 0, 0, 32, 3, 0, 0, 0, 1, 0, 0, 192, 64, 1, 0, 0, 224, 64, 0]
+        test_array_similarity(self, data, expected)
+
+    def test_append_simple_double_numpy_array(self):
+        array = np.array([6, 7, np.nan], dtype=np.float64)
+        buffer = BinaryBuffer()
+        buffer.append_numpy_array(array)
+
+        data = buffer.to_buffer()
+        expected = [1, 1, 0, 0, 0, 33, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 24, 64, 1, 0, 0, 0, 0, 0, 0, 28, 64, 0]
         test_array_similarity(self, data, expected)
 
     def test_append_vertical_numpy_array(self):
