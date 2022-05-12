@@ -16,6 +16,7 @@ ELEMENT_TYPE_DOUBLE = 0x21
 ELEMENT_TYPE_STRING = 0x30
 ELEMENT_TYPE_LIST = 0x40
 ELEMENT_TYPE_DICTIONARY = 0x41
+ELEMENT_TYPE_NONE = 0x10
 
 
 class BinaryBuffer:
@@ -120,25 +121,37 @@ class BinaryBuffer:
             self.__data.append(value)
 
     def append_list(self, value: List) -> None:
-        self.append_int(len(value))
+        if value is None:
+            self.append_byte(0)
+        else:
+            self.append_byte(1)
+            self.append_int(len(value))
 
-        for element in value:
-            if self.__is_primitive_value(element):
-                self.__append_primitive_value(element)
-            else:
-                raise Exception('An error occurred when serializing a list. Only primitive values are supported.')
+            for element in value:
+                if element is None:
+                    self.append_byte(ELEMENT_TYPE_NONE)
+                elif self.__is_primitive_value(element):
+                    self.__append_primitive_value(element)
+                else:
+                    raise Exception('An error occurred when serializing a list. Only primitive values are supported.')
 
     def append_dictionary(self, value: Dict[str, Any]) -> None:
-        self.append_int(len(value))
+        if value is None:
+            self.append_byte(0)
+        else:
+            self.append_byte(1)
+            self.append_int(len(value))
 
-        for key in value.keys():
-            self.append_string(key)
-            element = value[key]
-            if self.__is_primitive_value(element):
-                self.__append_primitive_value(element)
-            else:
-                raise Exception(
-                    'An error occurred when serializing a dictionary. Only string key and primitive values are supported.')
+            for key in value.keys():
+                self.append_string(key)
+                element = value[key]
+                if element is None:
+                    self.append_byte(ELEMENT_TYPE_NONE)
+                elif self.__is_primitive_value(element):
+                    self.__append_primitive_value(element)
+                else:
+                    raise Exception(
+                        'An error occurred when serializing a dictionary. Only string key and primitive values are supported.')
 
     def __is_primitive_value(self, value):
         return type(value) in self.__primitive_type_mapper.keys()

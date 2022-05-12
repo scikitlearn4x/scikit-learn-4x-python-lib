@@ -297,3 +297,33 @@ class TestBinaryBuffer(TestCase):
         data = buffer.to_buffer()
         expected = [1, 3, 0, 0, 0, 4, 2, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0]
         test_array_similarity(self, data, expected)
+
+    def test_append_null_dictionary(self):
+        buffer = BinaryBuffer()
+        buffer.append_dictionary(None)
+
+        data = buffer.to_buffer()
+        expected = [0]
+
+        test_array_similarity(self, data, expected)
+
+    def test_append_dictionary(self):
+        buffer = BinaryBuffer()
+
+        dictionary = {
+            'key_int': 15,
+            'key_floating_point': 3.14,
+            'key_string': 'This is a string',
+            'key_list': [1, 3.14, 'another_string', {'sample': 'one', 'another': -6.84}, None],
+            'key_dictionary': {
+                'option_1': 'Java',
+                'option_2': 'C#',
+            },
+            'null_key': None
+        }
+
+        buffer.append_dictionary(dictionary)
+        data = buffer.to_buffer()
+        expected = [1, 5, 0, 0, 0, 1, 7, 0, 0, 0, 107, 101, 121, 95, 105, 110, 116, 8, 15, 0, 0, 0, 0, 0, 0, 0, 1, 18, 0, 0, 0, 107, 101, 121, 95, 102, 108, 111, 97, 116, 105, 110, 103, 95, 112, 111, 105, 110, 116, 33, 1, 31, 133, 235, 81, 184, 30, 9, 64, 1, 10, 0, 0, 0, 107, 101, 121, 95, 115, 116, 114, 105, 110, 103, 48, 1, 16, 0, 0, 0, 84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 115, 116, 114, 105, 110, 103, 1, 8, 0, 0, 0, 107, 101, 121, 95, 108, 105, 115, 116, 64, 1, 4, 0, 0, 0, 8, 1, 0, 0, 0, 0, 0, 0, 0, 33, 1, 31, 133, 235, 81, 184, 30, 9, 64, 48, 1, 14, 0, 0, 0, 97, 110, 111, 116, 104, 101, 114, 95, 115, 116, 114, 105, 110, 103, 65, 1, 2, 0, 0, 0, 1, 6, 0, 0, 0, 115, 97, 109, 112, 108, 101, 48, 1, 3, 0, 0, 0, 111, 110, 101, 1, 7, 0, 0, 0, 97, 110, 111, 116, 104, 101, 114, 33, 1, 92, 143, 194, 245, 40, 92, 27, 192, 1, 14, 0, 0, 0, 107, 101, 121, 95, 100, 105, 99, 116, 105, 111, 110, 97, 114, 121, 65, 1, 2, 0, 0, 0, 1, 8, 0, 0, 0, 111, 112, 116, 105, 111, 110, 95, 49, 48, 1, 4, 0, 0, 0, 74, 97, 118, 97, 1, 8, 0, 0, 0, 111, 112, 116, 105, 111, 110, 95, 50, 48, 1, 2, 0, 0, 0, 67, 35]
+
+        test_array_similarity(self, data, expected)
