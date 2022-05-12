@@ -28,11 +28,27 @@ def test_array_similarity(self, actual: List[int], expected: List[int]) -> None:
 
 
 class TestBinaryBuffer(TestCase):
+    def test_append_float_nan(self) -> None:
+        buffer = BinaryBuffer()
+        buffer.append_float(np.nan)
+
+        expected = [0]
+        data = list(buffer.to_buffer())
+        test_array_similarity(self, data, expected)
+
+    def test_append_double_nan(self) -> None:
+        buffer = BinaryBuffer()
+        buffer.append_double(np.nan)
+
+        expected = [0]
+        data = list(buffer.to_buffer())
+        test_array_similarity(self, data, expected)
+
     def test_append_float_pi_positive(self) -> None:
         buffer = BinaryBuffer()
         buffer.append_float(3.1415)
 
-        expected = [86, 14, 73, 64]
+        expected = [1, 86, 14, 73, 64]
         data = list(buffer.to_buffer())
         test_array_similarity(self, data, expected)
 
@@ -40,7 +56,7 @@ class TestBinaryBuffer(TestCase):
         buffer = BinaryBuffer()
         buffer.append_float(-3.1415)
 
-        expected = [86, 14, 73, -64]
+        expected = [1, 86, 14, 73, -64]
         data = list(buffer.to_buffer())
         test_array_similarity(self, data, expected)
 
@@ -48,7 +64,7 @@ class TestBinaryBuffer(TestCase):
         buffer = BinaryBuffer()
         buffer.append_float(2.71828)
 
-        expected = [77, -8, 45, 64]
+        expected = [1, 77, -8, 45, 64]
         data = list(buffer.to_buffer())
         test_array_similarity(self, data, expected)
 
@@ -56,7 +72,7 @@ class TestBinaryBuffer(TestCase):
         buffer = BinaryBuffer()
         buffer.append_float(-2.71828)
 
-        expected = [77, -8, 45, -64]
+        expected = [1, 77, -8, 45, -64]
         data = list(buffer.to_buffer())
         test_array_similarity(self, data, expected)
 
@@ -64,7 +80,7 @@ class TestBinaryBuffer(TestCase):
         buffer = BinaryBuffer()
         buffer.append_double(3.1415)
 
-        expected = [111, 18, -125, -64, -54, 33, 9, 64]
+        expected = [1, 111, 18, -125, -64, -54, 33, 9, 64]
         data = list(buffer.to_buffer())
         test_array_similarity(self, data, expected)
 
@@ -72,7 +88,7 @@ class TestBinaryBuffer(TestCase):
         buffer = BinaryBuffer()
         buffer.append_double(-3.1415)
 
-        expected = [111, 18, -125, -64, -54, 33, 9, -64]
+        expected = [1, 111, 18, -125, -64, -54, 33, 9, -64]
         data = list(buffer.to_buffer())
         test_array_similarity(self, data, expected)
 
@@ -80,7 +96,7 @@ class TestBinaryBuffer(TestCase):
         buffer = BinaryBuffer()
         buffer.append_double(2.71828)
 
-        expected = [-112, -9, -86, -107, 9, -65, 5, 64]
+        expected = [1, -112, -9, -86, -107, 9, -65, 5, 64]
         data = list(buffer.to_buffer())
         test_array_similarity(self, data, expected)
 
@@ -88,7 +104,7 @@ class TestBinaryBuffer(TestCase):
         buffer = BinaryBuffer()
         buffer.append_double(-2.71828)
 
-        expected = [-112, -9, -86, -107, 9, -65, 5, -64]
+        expected = [1, -112, -9, -86, -107, 9, -65, 5, -64]
         data = list(buffer.to_buffer())
         test_array_similarity(self, data, expected)
 
@@ -164,6 +180,34 @@ class TestBinaryBuffer(TestCase):
 
             data = list(buffer.to_buffer())
             test_array_similarity(self, data, expected_output)
+
+    def test_append_none_string(self):
+        buffer = BinaryBuffer()
+        buffer.append_string(None)
+
+        data = buffer.to_buffer()
+        expected = [0]
+
+        test_array_similarity(self, data, expected)
+
+    def test_append_ascii_string(self):
+        buffer = BinaryBuffer()
+        buffer.append_string('test')
+
+        data = buffer.to_buffer()
+        expected = [1, 4, 0, 0, 0, 116, 101, 115, 116]
+
+        test_array_similarity(self, data, expected)
+
+    def test_append_utf8_string(self):
+        buffer = BinaryBuffer()
+        buffer.append_string('نمونه')
+
+        data = buffer.to_buffer()
+        expected = [1, 10, 0, 0, 0, 217, 134, 217, 133, 217, 136, 217, 134, 217, 135]
+
+        test_array_similarity(self, data, expected)
+
 
     def test_append_simple_null_numpy_array(self):
         buffer = BinaryBuffer()

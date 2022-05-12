@@ -42,10 +42,18 @@ class BinaryBuffer:
         }
 
     def append_float(self, value: float) -> None:
-        self.__data.append(struct.pack('f', value))
+        if np.isnan(value):
+            self.append_byte(0)
+        else:
+            self.append_byte(1)
+            self.__data.append(struct.pack('f', value))
 
     def append_double(self, value: float) -> None:
-        self.__data.append(struct.pack('d', value))
+        if np.isnan(value):
+            self.append_byte(0)
+        else:
+            self.append_byte(1)
+            self.__data.append(struct.pack('d', value))
 
     def append_byte(self, value: int) -> None:
         self.__data.append(struct.pack('b', value))
