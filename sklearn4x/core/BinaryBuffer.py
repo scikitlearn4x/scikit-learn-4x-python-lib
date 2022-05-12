@@ -99,7 +99,9 @@ class BinaryBuffer:
             self.append_byte(0)
         else:
             self.append_byte(1)
-            self.__data.append(bytes(value, 'utf-8'))
+            value = bytes(value, 'utf-8')
+            self.append_int(len(value))
+            self.__data.append(value)
 
     def append_list(self, value: List) -> None:
         self.append_int(len(value))
