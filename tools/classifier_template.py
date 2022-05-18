@@ -1,7 +1,7 @@
 from sklearn import datasets
 from sklearn.naive_bayes import GaussianNB
-
 from sklearn4x.sklearn4x import save_scikit_learn_model
+
 
 diabetes = datasets.load_diabetes()
 X = diabetes.data

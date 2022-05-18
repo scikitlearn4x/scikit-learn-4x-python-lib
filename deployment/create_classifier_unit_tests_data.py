@@ -18,6 +18,7 @@ def load_classifier_and_configurations():
 def add_gaussian_nb():
     config = get_classifier_config(friendly_name='Gaussian Naive Bayes',
                                    class_name='GaussianNB',
+                                   support_probabilities=True,
                                    namespace='sklearn.naive_bayes')
 
     # https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
@@ -36,11 +37,12 @@ def add_classifier_configuration(config, name, **parameters):
     config['configurations'].append({'config_name': name, **parameters})
 
 
-def get_classifier_config(friendly_name, class_name, namespace):
+def get_classifier_config(friendly_name, class_name, support_probabilities, namespace):
     return {
         'friendly_name': friendly_name,
         'class_name': class_name,
         'namespace': namespace,
+        'support_probabilities': support_probabilities,
         'configurations': []
     }
 
@@ -167,12 +169,67 @@ def build_version_subfolders(folder, properly_setup_environments):
             os.makedirs(path)
 
 
-def generate_python_code(classifiers_info, config):
-    pass
+def generate_python_code(classifier_info, config, dataset, path_to_save):
+    code = '''
+from sklearn import datasets
+from {package} import {classifier_class}
+from sklearn4x.sklearn4x import save_scikit_learn_model
+
+support_probabilities = {support_probabilities}
+
+ds = datasets.load_{data_set}()
+X = ds.data
+y = ds.target
+
+classifier = {classifier_class}()
+classifier.fit(X, y)
+
+predictions = classifier.predict(X)
+
+test_data = {
+    "dataset_name": "{data_set}",
+    "configurations": [],
+    "training_data": X,
+    "predictions": predictions,
+}
+
+if support_probabilities:
+    test_data["prediction_probabilities"] = classifier.predict_proba(X)
+    test_data["prediction_log_probabilities"] = classifier.predict_log_proba(X)
 
 
-def create_binary_and_test_files(classifiers_info, config, environments):
-    python_code = generate_python_code(classifiers_info, config)
+save_scikit_learn_model(classifier, {path_to_save}, test_data)
+    
+    '''
+    code = code.replace('{package}', classifier_info['namespace'])
+    code = code.replace('{classifier_class}', classifier_info['class_name'])
+    code = code.replace('{support_probabilities}', str(classifier_info['support_probabilities']))
+    code = code.replace('{data_set}', dataset)
+    code = code.replace('{path_to_save}', path_to_save)
+    return code
+
+
+def create_binary_and_test_files(classifier_info, config, environments, scripts, binaries):
+    datasets = ['diabetes', 'iris', 'wine', 'breast_cancer', 'linnerud']
+
+    for env in environments:
+        for dataset in datasets:
+            file_name = (config['config_name'] + ' on ' + dataset).strip().replace(' ', '_')
+            path_to_save_result = binaries + f'{env.scikit_learn_version}/{env.major_python_version}/{file_name}.skx'
+            path_to_save_python_code = scripts + f'{env.scikit_learn_version}/{env.major_python_version}/{file_name}.py'
+            python_code = generate_python_code(classifier_info, config, dataset, path_to_save_result)
+
+            if os.path.exists(path_to_save_python_code):
+                raise Exception('The file system structure is buggy, checkout why! This should not happen')
+
+            with open(path_to_save_python_code, 'w') as handle:
+                handle.write(python_code)
+
+            command = env.get_python() + f'"{path_to_save_python_code}"'
+            run_command_for_output(command)
+
+            if not os.path.exists(path_to_save_result):
+                raise Exception(f'An error occurred when running python {env.python_version} with {env.scikit_learn_version} on dataset {dataset} with config {config}.')
 
 
 def iterate_test_cases_and_create_test_files(properly_setup_environments):
@@ -194,7 +251,7 @@ def iterate_test_cases_and_create_test_files(properly_setup_environments):
         console_print(f'    * [{i + 1} of {len(classifiers_info)}] {classifier_info["friendly_name"]}')
         for config in classifier_info["configurations"]:
             console_print(f'        - {config["config_name"]}')
-            create_binary_and_test_files(classifiers_info, config, properly_setup_environments)
+            create_binary_and_test_files(classifier_info, config, properly_setup_environments, scripts, binaries)
 
 
 def main():
