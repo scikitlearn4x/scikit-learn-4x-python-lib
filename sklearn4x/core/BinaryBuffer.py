@@ -145,6 +145,9 @@ class BinaryBuffer:
             for key in value.keys():
                 self.append_string(key)
                 element = value[key]
+                if isinstance(element, np.ndarray):
+                    element = element.tolist()
+
                 if element is None:
                     self.append_byte(ELEMENT_TYPE_NONE)
                 elif self.__is_primitive_value(element):
@@ -163,3 +166,13 @@ class BinaryBuffer:
 
     def to_buffer(self):
         return b''.join(self.__data)
+
+    def append_data(self, value):
+        if isinstance(value, np.ndarray):
+            self.append_numpy_array(value)
+        elif isinstance(value, float):
+            self.append_double(value)
+        elif isinstance(value, int):
+            self.append_long(value)
+        else:
+            raise Exception('This type is not supported.')

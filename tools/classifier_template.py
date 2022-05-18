@@ -23,4 +23,4 @@ test_data = {
     'prediction_log_probabilities': prediction_log_probabilities,
 }
 
-save_scikit_learn_model(classifier, '/User/yektaie/Desktop/gaussian_nb.skx', test_data)
+save_scikit_learn_model(classifier, '/Users/yektaie/Desktop/gaussian_nb.skx', test_data)

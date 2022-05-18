@@ -20,8 +20,11 @@ def add_gaussian_nb():
                                    class_name='GaussianNB',
                                    namespace='sklearn.naive_bayes')
 
-    add_classifier_configuration(config=config, name='simplest_base_case_without_customization')
-    add_classifier_configuration(config=config, name='with_explicit_prior')
+    # https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
+    add_classifier_configuration(config=config, name='simplest base case without customization')
+    add_classifier_configuration(config=config, name='with explicit prior')
+    add_classifier_configuration(config=config, name='with explicit var smoothing')
+    add_classifier_configuration(config=config, name='with explicit prior and var smoothing')
 
     return config
 
