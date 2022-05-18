@@ -7,6 +7,7 @@ class CondaEnvironment:
         self.name = ''
         self.path = ''
         self.python_version = ''
+        self.major_python_version = ''
         self.scikit_learn_version = ''
 
     def __repr__(self):
@@ -17,6 +18,9 @@ class CondaEnvironment:
         self.python_version = output[0]
         self.python_version = self.python_version[self.python_version.rindex(' '):].strip()
 
+        self.major_python_version = major_minor_version(self.python_version)
+        self.scikit_learn_version = self.check_package_version('scikit-learn')
+
     def get_python(self):
         return self.path + '/bin/python'
 
@@ -26,7 +30,11 @@ class CondaEnvironment:
     def install_package(self, package_name, version=None):
         version = '' if version is None else '==' + version
         run_command_for_output(self.get_pip() + f' install {package_name}{version}', error_to_kill_on=["Installing build dependencies: finished with status 'error'"])
-        all_packages = run_command_for_output(self.get_pip() + ' list', error_to_kill_on=["Installing build dependencies: finished with status 'error'"])
+
+        return self.check_package_version(package_name)
+
+    def check_package_version(self, package_name):
+        all_packages = run_command_for_output(self.get_pip() + ' list')
 
         if not all_packages:
             return False

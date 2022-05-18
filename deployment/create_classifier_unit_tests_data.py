@@ -1,4 +1,5 @@
 import platform
+import shutil
 import sys
 
 from deploy_utils import *
@@ -15,17 +16,21 @@ def load_classifier_and_configurations():
 
 
 def add_gaussian_nb():
-    config = get_classifier_config(friendly_name='gaussian naive bayes',
+    config = get_classifier_config(friendly_name='Gaussian Naive Bayes',
                                    class_name='GaussianNB',
                                    namespace='sklearn.naive_bayes')
 
-    add_classifier_configuration(config=config, name='')
+    add_classifier_configuration(config=config, name='simplest_base_case_without_customization')
+    add_classifier_configuration(config=config, name='with_explicit_prior')
 
     return config
 
 
 def add_classifier_configuration(config, name, **parameters):
-    config['configurations'] = parameters
+    if name.startswith('test') or name.endswith('test'):
+        raise Exception('The test is the case name wil be added by the code.')
+
+    config['configurations'].append({'config_name': name, **parameters})
 
 
 def get_classifier_config(friendly_name, class_name, namespace):
@@ -33,7 +38,7 @@ def get_classifier_config(friendly_name, class_name, namespace):
         'friendly_name': friendly_name,
         'class_name': class_name,
         'namespace': namespace,
-        'configurations': {}
+        'configurations': []
     }
 
 
@@ -124,7 +129,6 @@ def remove_unsupported_versions(sklearn_versions):
             if version.startswith('0'):
                 to_remove.append(version)
 
-        to_remove = to_remove[1:]
         for version in to_remove:
             sklearn_versions.pop(version)
 
@@ -140,8 +144,54 @@ def get_argument(arg):
 
 
 def check_folder_empty(path):
-    if len(os.listdir(path)) > 0:
-        raise Exception('Output folder should be empty.')
+    if os.path.exists(path):
+        if len(os.listdir(path)) > 0:
+            shutil.rmtree(path)
+            os.mkdir(path)
+    else:
+        os.mkdir(path)
+
+
+def create_folder(path):
+    os.mkdir(path)
+    return path
+
+
+def build_version_subfolders(folder, properly_setup_environments):
+    for env in properly_setup_environments:
+        path = folder + env.scikit_learn_version + '/' + env.major_python_version + '/'
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+
+def generate_python_code(classifiers_info, config):
+    pass
+
+
+def create_binary_and_test_files(classifiers_info, config, environments):
+    python_code = generate_python_code(classifiers_info, config)
+
+
+def iterate_test_cases_and_create_test_files(properly_setup_environments):
+    path = get_argument('--save-path')
+    if not path.endswith('/'): path += '/'
+    console_print('Start creating test cases.')
+    console_print(f'    * Path: {path}')
+    check_folder_empty(path)
+
+    scripts = create_folder(path + 'scripts/')
+    unit_tests = create_folder(path + 'unit_tests/')
+    binaries = create_folder(path + 'binaries/')
+
+    build_version_subfolders(scripts, properly_setup_environments)
+    build_version_subfolders(binaries, properly_setup_environments)
+
+    classifiers_info = load_classifier_and_configurations()
+    for i, classifier_info in enumerate(classifiers_info):
+        console_print(f'    * [{i + 1} of {len(classifiers_info)}] {classifier_info["friendly_name"]}')
+        for config in classifier_info["configurations"]:
+            console_print(f'        - {config["config_name"]}')
+            create_binary_and_test_files(classifiers_info, config, properly_setup_environments)
 
 
 def main():
@@ -149,14 +199,7 @@ def main():
     remove_unsupported_versions(sklearn_versions)
     properly_setup_environments, failed_environments = prepare_conda_environment_based_on_sklearn_versions(sklearn_versions)
 
-    path = get_argument('--save-path')
-    console_print('Start creating test cases.')
-    console_print(f'    * Path: {path}')
-    check_folder_empty(path)
-
-    classifiers_info = load_classifier_and_configurations()
-    for i, classifier_info in enumerate(classifiers_info):
-        console_print(f'    * [{i + 1} of {len(classifiers_info)}] ')
+    iterate_test_cases_and_create_test_files(properly_setup_environments)
 
 
 if __name__ == '__main__':
