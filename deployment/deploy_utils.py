@@ -25,8 +25,12 @@ class CondaEnvironment:
 
     def install_package(self, package_name, version=None):
         version = '' if version is None else '==' + version
-        run_command_for_output(self.get_pip() + f' install {package_name}{version}')
-        all_packages = run_command_for_output(self.get_pip() + ' list')
+        run_command_for_output(self.get_pip() + f' install {package_name}{version}', error_to_kill_on=["Installing build dependencies: finished with status 'error'"])
+        all_packages = run_command_for_output(self.get_pip() + ' list', error_to_kill_on=["Installing build dependencies: finished with status 'error'"])
+
+        if not all_packages:
+            return False
+
         result = None
 
         for line in all_packages:
@@ -34,7 +38,6 @@ class CondaEnvironment:
                 components = remove_empty_element(line.split(' '))
                 result = components[1]
 
-        assert result is not None, 'Package installation failed'
         return result
 
 
@@ -44,12 +47,18 @@ def ensure_git_all_changes_committed():
         raise Exception('Please commit all changes before running this script.')
 
 
-def run_command_for_output(command):
+def run_command_for_output(command, error_to_kill_on=[]):
     result = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     lines = []
     for line in result.stdout:
-        # print(line)
-        lines.append(bytes.decode(line).strip())
+        line = bytes.decode(line).strip()
+
+        for error in error_to_kill_on:
+            if error in line:
+                result.kill()
+                result.wait()
+                return False
+        lines.append(line)
 
     return lines
 
