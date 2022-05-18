@@ -134,18 +134,18 @@ def test_library_in_environment(environment, throw_exception):
                 raise Exception(f'No unit tests found on python {environment_info.python_version} [{environment_info.name}]')
             all_tests_passed = False
 
-    integration_root = './tests/integration_tests/'
-    integration_tests = []
-    list_all_integration_tests(integration_root, integration_tests)
-    if len(integration_tests) == 0:
-        all_tests_passed = False
-    console_print(f'        - Running {len(integration_tests)} integration test scripts')
-    for integration_test in integration_tests:
-        script = subprocess.run([environment_info.get_python(), integration_test], stdout=subprocess.PIPE)
-        if script.returncode != 0:
-            if throw_exception:
-                raise Exception(f'The integration test "{integration_test}" failed on python {environment_info.python_version} [{environment_info.name}]')
-            all_tests_passed = False
+    # integration_root = './tests/integration_tests/'
+    # integration_tests = []
+    # list_all_integration_tests(integration_root, integration_tests)
+    # if len(integration_tests) == 0:
+    #     all_tests_passed = False
+    # console_print(f'        - Running {len(integration_tests)} integration test scripts')
+    # for integration_test in integration_tests:
+    #     script = subprocess.run([environment_info.get_python(), integration_test], stdout=subprocess.PIPE)
+    #     if script.returncode != 0:
+    #         if throw_exception:
+    #             raise Exception(f'The integration test "{integration_test}" failed on python {environment_info.python_version} [{environment_info.name}]')
+    #         all_tests_passed = False
 
     return all_tests_passed, major_minor_version(environment_info.python_version)
 
