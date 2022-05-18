@@ -27,8 +27,8 @@ def test_library_on_all_python_versions():
 def full_deployment_script():
     ensure_script_is_called_from_root()
     ensure_pypi_credential_exists()
-    ensure_git_all_changes_committed()
     delete_all_macos_ds_store_files()
+    ensure_git_all_changes_committed()
     delete_build_folders()
     lib_version = load_library_version()
     environments = create_conda_environments()
