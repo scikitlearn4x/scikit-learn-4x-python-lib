@@ -26,19 +26,55 @@ def add_gaussian_nb():
                                    namespace='sklearn.naive_bayes')
 
     # https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
+    explicit_priors = {
+        'iris': {
+            'priors': [0.1, 0.2, 0.7]
+        },
+        'wine': {
+            'priors': [0.1, 0.2, 0.7]
+        },
+        'breast_cancer': {
+            'priors': [0.1, 0.9]
+        },
+    }
+
+    var_smoothings = {
+        '*': {
+            'var_smoothing': 3e-9,
+        }
+    }
+
+    explicit_priors_and_var_smoothing = {
+        'iris': {
+            'priors': [0.1, 0.4, 0.5],
+            'var_smoothing': 3e-9,
+        },
+        'wine': {
+            'priors': [0.05, 0.8, 0.15],
+            'var_smoothing': 3e-9,
+        },
+        'breast_cancer': {
+            'priors': [0.1, 0.9],
+            'var_smoothing': 3e-9,
+        },
+    }
+
     add_classifier_configuration(config=config, name='simplest base case without customization')
-    add_classifier_configuration(config=config, name='with explicit prior')
-    add_classifier_configuration(config=config, name='with explicit var smoothing')
-    add_classifier_configuration(config=config, name='with explicit prior and var smoothing')
+    add_classifier_configuration(config=config, name='with explicit prior', dataset_custom_parameters=explicit_priors)
+    add_classifier_configuration(config=config, name='with explicit var smoothing', dataset_custom_parameters=var_smoothings)
+    add_classifier_configuration(config=config, name='with explicit prior and var smoothing', dataset_custom_parameters=explicit_priors_and_var_smoothing)
 
     return config
 
 
-def add_classifier_configuration(config, name, **parameters):
+def add_classifier_configuration(config, name, dataset_custom_parameters=None):
     if name.startswith('test') or name.endswith('test'):
         raise Exception('The test is the case name wil be added by the code.')
 
-    config['configurations'].append({'config_name': name, **parameters})
+    if dataset_custom_parameters is None:
+        config['configurations'].append({'config_name': name})
+    else:
+        config['configurations'].append({'config_name': name, 'data_set_parameters': dataset_custom_parameters})
 
 
 def get_classifier_config(friendly_name, class_name, support_probabilities, target_language_class_name, namespace):
@@ -187,7 +223,7 @@ ds = datasets.load_{data_set}()
 X = ds.data
 y = ds.target
 
-classifier = {classifier_class}()
+classifier = {classifier_class}({parameters})
 classifier.fit(X, y)
 
 predictions = classifier.predict(X)
@@ -212,11 +248,34 @@ save_scikit_learn_model(classifier, "{path_to_save}", test_data)
     code = code.replace('{support_probabilities}', str(classifier_info['support_probabilities']))
     code = code.replace('{data_set}', dataset)
     code = code.replace('{path_to_save}', path_to_save)
+
+    parameters = ''
+
+    if 'data_set_parameters' in config.keys():
+        ds_params = config['data_set_parameters']
+        if dataset in ds_params.keys():
+            parameters = to_function_params(ds_params[dataset])
+        elif '*' in ds_params.keys():
+            parameters = to_function_params(ds_params['*'])
+
+    code = code.replace('{parameters}', parameters)
     return code
 
 
+def to_function_params(dic):
+    result = ''
+    sep = ''
+
+    for key in dic.keys():
+        result += sep
+        result += (key + '=' + str(dic[key]))
+        sep = ', '
+
+    return result
+
+
 def create_binary_and_test_files(classifier_info, config, environments, scripts, binaries, unit_tests):
-    datasets = ['diabetes', 'iris', 'wine', 'breast_cancer']
+    datasets = ['iris', 'wine', 'breast_cancer']
 
     sub_tasks = []
     for env in environments:
@@ -263,9 +322,9 @@ def generate_java_unit_tests(classifier_info, environments, datasets, unit_tests
                 code.append('\t\t// Check actual computed values')
                 code.append(f'\t\t{classifier_info["target_language_class_name"]} classifier = ({classifier_info["target_language_class_name"]})binaryPackage.getModel(0);\n')
                 code.append('\t\tNumpyArray<Double> x = (NumpyArray<Double>)binaryPackage.getExtraValues().get("training_data");')
-                code.append('\t\tNumpyArray<Double> gtPredictions = (NumpyArray<Double>)binaryPackage.getExtraValues().get("predictions");')
-                code.append('\t\tNumpyArray<Integer> predictions = classifier.predict(x);')
-                code.append('\t\tTestHelper.assertEqualPredictions(predictions, (double[][])gtPredictions.getWrapper().getRawArray());')
+                code.append('\t\tNumpyArray<Long> gtPredictions = (NumpyArray<Long>)binaryPackage.getExtraValues().get("predictions");')
+                code.append('\t\tNumpyArray<Long> predictions = classifier.predict(x);')
+                code.append('\t\tTestHelper.assertEqualPredictions(predictions, (long[])gtPredictions.getWrapper().getRawArray());')
                 if support_probabilities:
                     code.append('')
                     code.append('\t\tNumpyArray<Double> gtProbabilities = (NumpyArray<Double>)binaryPackage.getExtraValues().get("prediction_probabilities");')

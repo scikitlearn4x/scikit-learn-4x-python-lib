@@ -16,6 +16,7 @@ ELEMENT_TYPE_DOUBLE = 0x21
 ELEMENT_TYPE_STRING = 0x30
 ELEMENT_TYPE_LIST = 0x40
 ELEMENT_TYPE_DICTIONARY = 0x41
+ELEMENT_TYPE_NUMPY_ARRAY = 0x42
 ELEMENT_TYPE_NONE = 0x10
 
 
@@ -28,6 +29,7 @@ class BinaryBuffer:
             float: (ELEMENT_TYPE_DOUBLE, self.append_double),
             list: (ELEMENT_TYPE_LIST, self.append_list),
             dict: (ELEMENT_TYPE_DICTIONARY, self.append_dictionary),
+            np.ndarray: (ELEMENT_TYPE_NUMPY_ARRAY, self.append_numpy_array),
         }
         self.__numpy_type_mapper = {
             'int8': ('b', ELEMENT_TYPE_BYTE),
@@ -145,8 +147,6 @@ class BinaryBuffer:
             for key in value.keys():
                 self.append_string(key)
                 element = value[key]
-                if isinstance(element, np.ndarray):
-                    element = element.tolist()
 
                 if element is None:
                     self.append_byte(ELEMENT_TYPE_NONE)
