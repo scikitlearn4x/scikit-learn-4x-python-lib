@@ -29,7 +29,7 @@ class CondaEnvironment:
 
     def install_package(self, package_name, version=None):
         version = '' if version is None else '==' + version
-        run_command_for_output(self.get_pip() + f' install {package_name}{version}', error_to_kill_on=["Installing build dependencies: finished with status 'error'"])
+        output = run_command_for_output(self.get_pip() + f' install {package_name}{version}', error_to_kill_on=["Installing build dependencies: finished with status 'error'"])
 
         return self.check_package_version(package_name)
 

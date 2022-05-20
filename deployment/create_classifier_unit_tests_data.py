@@ -8,6 +8,11 @@ from deploy_utils import *
 from config import *
 
 CONDA_ENV_FOR_MAKING_UNIT_TESTS = 'unit_test_sklearn4x_{python_version}_sk_{sklearn_version}'
+DATASET_FEATURES = {
+    'iris': ['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm'],
+    'wine': ['Class Label', 'Alcohol', 'Malic acid', 'Ash', 'Alcalinity of ash', 'Magnesium', 'Total phenols', 'Flavanoids', 'Nonflavanoid phenols', 'Proanthocyanins', 'Color intensity', 'Hue', 'diluted wines'],
+    'breast_cancer': [f'f_{i + 1}' for i in range(30)],
+}
 
 
 def load_classifier_and_configurations():
@@ -60,6 +65,7 @@ def add_gaussian_nb():
     }
 
     add_classifier_configuration(config=config, name='simplest base case without customization')
+    add_classifier_configuration(config=config, name='base case including feature name', include_feature_names=True)
     add_classifier_configuration(config=config, name='with explicit prior', dataset_custom_parameters=explicit_priors)
     add_classifier_configuration(config=config, name='with explicit var smoothing', dataset_custom_parameters=var_smoothings)
     add_classifier_configuration(config=config, name='with explicit prior and var smoothing', dataset_custom_parameters=explicit_priors_and_var_smoothing)
@@ -67,14 +73,14 @@ def add_gaussian_nb():
     return config
 
 
-def add_classifier_configuration(config, name, dataset_custom_parameters=None):
+def add_classifier_configuration(config, name, dataset_custom_parameters=None, **other_parameters):
     if name.startswith('test') or name.endswith('test'):
         raise Exception('The test is the case name wil be added by the code.')
 
     if dataset_custom_parameters is None:
-        config['configurations'].append({'config_name': name})
+        config['configurations'].append({'config_name': name, **other_parameters})
     else:
-        config['configurations'].append({'config_name': name, 'data_set_parameters': dataset_custom_parameters})
+        config['configurations'].append({'config_name': name, 'data_set_parameters': dataset_custom_parameters, **other_parameters})
 
 
 def get_classifier_config(friendly_name, class_name, support_probabilities, target_language_class_name, namespace):
@@ -131,8 +137,9 @@ def prepare_conda_environment(environments, scikit_learn_version, python_version
 
     environment = environments[env_name]
     sklearn_version = environment.install_package('scikit-learn', scikit_learn_version)
+    pandas_version = environment.install_package('pandas')
     sklearn4x_version = environment.install_package(f'"{PYTHON_LIB_PATH}"')
-    return sklearn_version is not None
+    return sklearn_version is not None and pandas_version is not None
 
 
 def get_test_environment_name(python_version, scikit_learn_version):
@@ -216,6 +223,7 @@ def generate_python_code(classifier_info, config, dataset, path_to_save):
 from sklearn import datasets
 from {package} import {classifier_class}
 from sklearn4x.sklearn4x import save_scikit_learn_model
+import pandas as pd
 
 support_probabilities = {support_probabilities}
 
@@ -223,8 +231,10 @@ ds = datasets.load_{data_set}()
 X = ds.data
 y = ds.target
 
+{include_feature_names}
+
 classifier = {classifier_class}({parameters})
-classifier.fit(X, y)
+classifier.fit(train_data, y)
 
 predictions = classifier.predict(X)
 
@@ -233,6 +243,7 @@ test_data = {
     "configurations": [],
     "training_data": X,
     "predictions": predictions,
+    {feature_names_in_extras}
 }
 
 if support_probabilities:
@@ -250,15 +261,24 @@ save_scikit_learn_model(classifier, "{path_to_save}", test_data)
     code = code.replace('{path_to_save}', path_to_save)
 
     parameters = ''
-
     if 'data_set_parameters' in config.keys():
         ds_params = config['data_set_parameters']
         if dataset in ds_params.keys():
             parameters = to_function_params(ds_params[dataset])
         elif '*' in ds_params.keys():
             parameters = to_function_params(ds_params['*'])
-
     code = code.replace('{parameters}', parameters)
+
+    convert_to_include_feature_names = ''
+    feature_names_in_extras = ''
+    if 'include_feature_names' in config.keys():
+        convert_to_include_feature_names = f'train_data = pd.DataFrame(data=X, index=None, columns={DATASET_FEATURES[dataset]}, dtype=X.dtype, copy=False)'
+        feature_names_in_extras = f'"feature_names": {DATASET_FEATURES[dataset]},'
+    else:
+        convert_to_include_feature_names = 'train_data = X'
+    code = code.replace('{include_feature_names}', convert_to_include_feature_names)
+    code = code.replace('{feature_names_in_extras}', feature_names_in_extras)
+
     return code
 
 
@@ -275,7 +295,7 @@ def to_function_params(dic):
 
 
 def create_binary_and_test_files(classifier_info, config, environments, scripts, binaries, unit_tests):
-    datasets = ['iris', 'wine', 'breast_cancer']
+    datasets = [key for key in DATASET_FEATURES.keys()]
 
     sub_tasks = []
     for env in environments:
@@ -318,6 +338,9 @@ def generate_java_unit_tests(classifier_info, environments, datasets, unit_tests
                 code.append('')
                 code.append('\t\t// Check extra values')
                 code.append(f'\t\tAssertions.assertEquals("{dataset}", binaryPackage.getExtraValues().get("dataset_name"));')
+                if 'include_feature_names' in configuration.keys():
+                    features = '{' + str(DATASET_FEATURES[dataset])[1:-1].replace("'", '"') + '}'
+                    code.append(f'\t\tTestHelper.assertCorrectFeatureNames(new String[] {features}, (String[])binaryPackage.getExtraValues().get("feature_names"));')
                 code.append('')
                 code.append('\t\t// Check actual computed values')
                 code.append(f'\t\t{classifier_info["target_language_class_name"]} classifier = ({classifier_info["target_language_class_name"]})binaryPackage.getModel(0);\n')

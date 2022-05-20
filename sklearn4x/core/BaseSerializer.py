@@ -27,6 +27,14 @@ class BaseSerializer:
         if self.is_version_higher(version, min_version, True) and self.is_version_higher(max_version, version, False):
             fields.append((name, value))
 
+    def to_array_of_string(self, numpy_array):
+        result = [None] * numpy_array.shape[0]
+
+        for i, value in enumerate(numpy_array):
+            result[i] = str(value)
+
+        return result
+
     def is_version_higher(self, v1, v2, on_equal=True):
         if v1 is None:
             return True

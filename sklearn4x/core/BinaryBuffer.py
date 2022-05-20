@@ -17,6 +17,7 @@ ELEMENT_TYPE_STRING = 0x30
 ELEMENT_TYPE_LIST = 0x40
 ELEMENT_TYPE_DICTIONARY = 0x41
 ELEMENT_TYPE_NUMPY_ARRAY = 0x42
+ELEMENT_TYPE_STRING_ARRAY = 0x43
 ELEMENT_TYPE_NONE = 0x10
 
 
@@ -71,7 +72,7 @@ class BinaryBuffer:
         self.__data.append(struct.pack('l', value))
 
     def __append_number(self, value, fmt) -> None:
-        if fmt in  ['d', 'f']:
+        if fmt in ['d', 'f']:
             # This is a float value and may be NaN
             if np.isnan(value):
                 self.append_byte(0)
@@ -122,6 +123,15 @@ class BinaryBuffer:
             self.append_int(len(value))
             self.__data.append(value)
 
+    def append_array_of_string(self, array):
+        if array is None:
+            self.append_byte(0)
+        else:
+            self.append_byte(1)
+            self.append_int(len(array))
+            for item in array:
+                self.append_string(item)
+
     def append_list(self, value: List) -> None:
         if value is None:
             self.append_byte(0)
@@ -150,6 +160,9 @@ class BinaryBuffer:
 
                 if element is None:
                     self.append_byte(ELEMENT_TYPE_NONE)
+                elif self.__is_string_array(element):
+                    self.append_byte(ELEMENT_TYPE_STRING_ARRAY)
+                    self.append_array_of_string(element)
                 elif self.__is_primitive_value(element):
                     self.__append_primitive_value(element)
                 else:
@@ -170,9 +183,24 @@ class BinaryBuffer:
     def append_data(self, value):
         if isinstance(value, np.ndarray):
             self.append_numpy_array(value)
+        elif self.__is_string_array(value):
+            self.append_array_of_string(value)
         elif isinstance(value, float):
             self.append_double(value)
         elif isinstance(value, int):
             self.append_long(value)
         else:
             raise Exception('This type is not supported.')
+
+    def __is_string_array(self, value):
+        if isinstance(value, list) and len(value) > 0:
+            all_string = True
+
+            for item in value:
+                all_string = isinstance(item, str)
+                if not all_string:
+                    break
+
+            return all_string
+
+        return False
