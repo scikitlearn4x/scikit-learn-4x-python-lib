@@ -2,9 +2,9 @@ import sklearn
 from sklearn.base import BaseEstimator
 from sklearn.naive_bayes import GaussianNB
 
-from sklearn4x.core.BinaryBuffer import BinaryBuffer
-from sklearn4x.core.BinaryPackage import BinaryPackage
-from sklearn4x.serializers.naive_bayes.GaussianNaiveBayesSerializer import GaussianNaiveBayesSerializer
+from .core.BinaryBuffer import BinaryBuffer
+from .core.BinaryPackage import BinaryPackage
+from .serializers.naive_bayes.GaussianNaiveBayesSerializer import GaussianNaiveBayesSerializer
 
 SERIALIZERS = [
     (GaussianNB, GaussianNaiveBayesSerializer())

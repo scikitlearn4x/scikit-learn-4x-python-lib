@@ -1,8 +1,11 @@
+import multiprocessing
 import platform
 import shutil
 import sys
+from multiprocessing import Pool
 
 from deploy_utils import *
+from config import *
 
 CONDA_ENV_FOR_MAKING_UNIT_TESTS = 'unit_test_sklearn4x_{python_version}_sk_{sklearn_version}'
 
@@ -19,6 +22,7 @@ def add_gaussian_nb():
     config = get_classifier_config(friendly_name='Gaussian Naive Bayes',
                                    class_name='GaussianNB',
                                    support_probabilities=True,
+                                   target_language_class_name='GaussianNaiveBayes',
                                    namespace='sklearn.naive_bayes')
 
     # https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
@@ -37,12 +41,13 @@ def add_classifier_configuration(config, name, **parameters):
     config['configurations'].append({'config_name': name, **parameters})
 
 
-def get_classifier_config(friendly_name, class_name, support_probabilities, namespace):
+def get_classifier_config(friendly_name, class_name, support_probabilities, target_language_class_name, namespace):
     return {
         'friendly_name': friendly_name,
         'class_name': class_name,
         'namespace': namespace,
         'support_probabilities': support_probabilities,
+        'target_language_class_name': target_language_class_name,
         'configurations': []
     }
 
@@ -89,8 +94,9 @@ def prepare_conda_environment(environments, scikit_learn_version, python_version
         environments[env_name] = get_conda_environments()[env_name]
 
     environment = environments[env_name]
-    installed_version = environment.install_package('scikit-learn', scikit_learn_version)
-    return installed_version is not None
+    sklearn_version = environment.install_package('scikit-learn', scikit_learn_version)
+    sklearn4x_version = environment.install_package(f'"{PYTHON_LIB_PATH}"')
+    return sklearn_version is not None
 
 
 def get_test_environment_name(python_version, scikit_learn_version):
@@ -198,7 +204,7 @@ if support_probabilities:
     test_data["prediction_log_probabilities"] = classifier.predict_log_proba(X)
 
 
-save_scikit_learn_model(classifier, {path_to_save}, test_data)
+save_scikit_learn_model(classifier, "{path_to_save}", test_data)
     
     '''
     code = code.replace('{package}', classifier_info['namespace'])
@@ -209,27 +215,111 @@ save_scikit_learn_model(classifier, {path_to_save}, test_data)
     return code
 
 
-def create_binary_and_test_files(classifier_info, config, environments, scripts, binaries):
-    datasets = ['diabetes', 'iris', 'wine', 'breast_cancer', 'linnerud']
+def create_binary_and_test_files(classifier_info, config, environments, scripts, binaries, unit_tests):
+    datasets = ['diabetes', 'iris', 'wine', 'breast_cancer']
 
+    sub_tasks = []
     for env in environments:
         for dataset in datasets:
-            file_name = (config['config_name'] + ' on ' + dataset).strip().replace(' ', '_')
-            path_to_save_result = binaries + f'{env.scikit_learn_version}/{env.major_python_version}/{file_name}.skx'
-            path_to_save_python_code = scripts + f'{env.scikit_learn_version}/{env.major_python_version}/{file_name}.py'
-            python_code = generate_python_code(classifier_info, config, dataset, path_to_save_result)
+            sub_tasks.append([classifier_info, config, env, dataset, scripts, binaries, unit_tests])
 
-            if os.path.exists(path_to_save_python_code):
-                raise Exception('The file system structure is buggy, checkout why! This should not happen')
+    with Pool(multiprocessing.cpu_count()) as p:
+        results = p.map(create_binary_files_from_dataset_and_environment, sub_tasks)
 
-            with open(path_to_save_python_code, 'w') as handle:
-                handle.write(python_code)
+    for result in results:
+        if result is not None:
+            raise Exception(result)
 
-            command = env.get_python() + f'"{path_to_save_python_code}"'
-            run_command_for_output(command)
+    generate_java_unit_tests(classifier_info, environments, datasets, unit_tests)
 
-            if not os.path.exists(path_to_save_result):
-                raise Exception(f'An error occurred when running python {env.python_version} with {env.scikit_learn_version} on dataset {dataset} with config {config}.')
+
+def generate_java_unit_tests(classifier_info, environments, datasets, unit_tests):
+    class_name = classifier_info['friendly_name'].replace(' ', '') + 'Tests'
+    support_probabilities = classifier_info['support_probabilities']
+
+    code = []
+    code.append(f'public class {class_name} ' + '{')
+
+    for env in environments:
+        code.append('\t// ------------------------------------------------------------------------')
+        code.append(f'\t// Test for scikit-learn {env.scikit_learn_version} on python {env.python_version}')
+        code.append('\t// ------------------------------------------------------------------------\n')
+        for dataset in datasets:
+            for configuration in classifier_info['configurations']:
+                file_name = (classifier_info['friendly_name'].lower() + ' ' + configuration['config_name'] + ' on ' + dataset).strip().replace(' ', '_')
+                file_name = f'{env.scikit_learn_version}/{env.major_python_version}/{file_name}'
+
+                code.append('\t@Test')
+                code.append(f'\tpublic void test{config_name_in_function(configuration["config_name"])}OnPython{env.python_version.replace(".", "_")}WithSkLearn{env.scikit_learn_version.replace(".", "_")}On{config_name_in_function(dataset)}() ' + '{')
+                code.append(f'\t\tString path = TestHelper.getAbsolutePathOfBinaryPackage("{file_name}.skx");')
+                code.append(f'\t\tIScikitLearnPackage binaryPackage = ScikitLearnPackage.loadFromFile(path);\n')
+                code.append('\t\t// Check header values')
+                code.append(f'\t\tAssertions.assertEquals(1, binaryPackage.getPackageHeader().getFileFormatVersion());')
+                code.append(f'\t\tAssertions.assertEquals("{env.scikit_learn_version}", binaryPackage.getPackageHeader().getScikitLearnVersion());')
+                code.append('')
+                code.append('\t\t// Check extra values')
+                code.append(f'\t\tAssertions.assertEquals("{dataset}", binaryPackage.getExtraValues().get("dataset_name"));')
+                code.append('')
+                code.append('\t\t// Check actual computed values')
+                code.append(f'\t\t{classifier_info["target_language_class_name"]} classifier = ({classifier_info["target_language_class_name"]})binaryPackage.getModel(0);\n')
+                code.append('\t\tNumpyArray<Double> x = (NumpyArray<Double>)binaryPackage.getExtraValues().get("training_data");')
+                code.append('\t\tNumpyArray<Double> gtPredictions = (NumpyArray<Double>)binaryPackage.getExtraValues().get("predictions");')
+                code.append('\t\tNumpyArray<Integer> predictions = classifier.predict(x);')
+                code.append('\t\tTestHelper.assertEqualPredictions(predictions, (double[][])gtPredictions.getWrapper().getRawArray());')
+                if support_probabilities:
+                    code.append('')
+                    code.append('\t\tNumpyArray<Double> gtProbabilities = (NumpyArray<Double>)binaryPackage.getExtraValues().get("prediction_probabilities");')
+                    code.append('\t\tNumpyArray<Double> probabilities = classifier.predictProbabilities(x);')
+                    code.append('\t\tTestHelper.assertEqualData(probabilities, (double[][])gtProbabilities.getWrapper().getRawArray());')
+                    code.append('')
+                    code.append('\t\tNumpyArray<Double> gtLogProbabilities = (NumpyArray<Double>)binaryPackage.getExtraValues().get("prediction_log_probabilities");')
+                    code.append('\t\tNumpyArray<Double> logProbabilities = classifier.predictLogProbabilities(x);')
+                    code.append('\t\tTestHelper.assertEqualData(logProbabilities, (double[][])gtLogProbabilities.getWrapper().getRawArray());')
+
+                code.append('\t}\n')
+
+    code.append('}')
+    code = '\n'.join(code)
+
+    print(code)
+
+
+def config_name_in_function(name):
+    upper = True
+    result = ''
+
+    for ch in name:
+        if ch == ' ' or ch == '_':
+            upper = True
+        elif upper:
+            result += ch.upper()
+            upper = False
+        else:
+            result += ch
+
+    return result
+
+
+def create_binary_files_from_dataset_and_environment(parameters):
+    classifier_info, config, env, dataset, scripts, binaries, unit_tests = parameters
+    file_name = (classifier_info['friendly_name'].lower() + ' ' + config['config_name'] + ' on ' + dataset).strip().replace(' ', '_')
+    path_to_save_result = binaries + f'{env.scikit_learn_version}/{env.major_python_version}/{file_name}.skx'
+    path_to_save_python_code = scripts + f'{env.scikit_learn_version}/{env.major_python_version}/{file_name}.py'
+    python_code = generate_python_code(classifier_info, config, dataset, path_to_save_result)
+
+    if os.path.exists(path_to_save_python_code):
+        raise Exception('The file system structure is buggy, checkout why! This should not happen')
+
+    with open(path_to_save_python_code, 'w') as handle:
+        handle.write(python_code)
+
+    command = env.get_python() + f' "{path_to_save_python_code}"'
+    run_command_for_output(command)
+
+    if not os.path.exists(path_to_save_result):
+        return f'An error occurred when running python {env.python_version} with {env.scikit_learn_version} on dataset {dataset} with config {config}.'
+
+    return None
 
 
 def iterate_test_cases_and_create_test_files(properly_setup_environments):
@@ -251,7 +341,7 @@ def iterate_test_cases_and_create_test_files(properly_setup_environments):
         console_print(f'    * [{i + 1} of {len(classifiers_info)}] {classifier_info["friendly_name"]}')
         for config in classifier_info["configurations"]:
             console_print(f'        - {config["config_name"]}')
-            create_binary_and_test_files(classifier_info, config, properly_setup_environments, scripts, binaries)
+            create_binary_and_test_files(classifier_info, config, properly_setup_environments, scripts, binaries, unit_tests)
 
 
 def main():

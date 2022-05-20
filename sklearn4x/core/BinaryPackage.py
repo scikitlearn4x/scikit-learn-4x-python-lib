@@ -2,6 +2,7 @@ from abc import abstractmethod
 
 import sklearn
 
+from sklearn4x import __version__
 from sklearn4x.core.BinaryBuffer import BinaryBuffer
 
 
@@ -22,17 +23,7 @@ class BinaryPackage:
         pass
 
     def get_library_version(self):
-        path = __file__
-        path = path[0:path.rindex('sklearn4x')] + 'setup.cfg'
-
-        with open(path, 'r') as handle:
-            lines = handle.readlines()
-
-        for line in lines:
-            if line.startswith('version = '):
-                return line[10:].strip()
-
-        raise Exception('Unable to read the library version from setup.cfg.')
+        return __version__
 
     def get_scikit_learn_version(self):
         return sklearn.__version__

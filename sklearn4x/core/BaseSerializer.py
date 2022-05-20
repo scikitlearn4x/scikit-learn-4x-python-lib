@@ -8,8 +8,16 @@ class BaseSerializer:
     def identifier(self):
         pass
 
-    @abstractmethod
     def serialize_model(self, buffer: BinaryBuffer, model, version):
+        fields = self.get_fields_to_be_serialized(model, version)
+
+        buffer.append_int(len(fields))
+        for name, value in fields:
+            buffer.append_string(name)
+            buffer.append_data(value)
+
+    @abstractmethod
+    def get_fields_to_be_serialized(self, model, version):
         pass
 
     def add_field(self, fields, name, value, version=None, min_version=None, max_version=None):
