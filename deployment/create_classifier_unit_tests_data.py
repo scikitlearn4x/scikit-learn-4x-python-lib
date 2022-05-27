@@ -310,6 +310,7 @@ def create_binary_and_test_files(classifier_info, config, environments, scripts,
             raise Exception(result)
 
     generate_java_unit_tests(classifier_info, environments, datasets, unit_tests)
+    generate_csharp_unit_tests(classifier_info, environments, datasets, unit_tests)
 
 
 def generate_java_unit_tests(classifier_info, environments, datasets, unit_tests):
@@ -331,7 +332,7 @@ def generate_java_unit_tests(classifier_info, environments, datasets, unit_tests
                 code.append('\t@Test')
                 code.append(f'\tpublic void test{config_name_in_function(configuration["config_name"])}OnPython{env.python_version.replace(".", "_")}WithSkLearn{env.scikit_learn_version.replace(".", "_")}On{config_name_in_function(dataset)}() ' + '{')
                 code.append(f'\t\tString path = TestHelper.getAbsolutePathOfBinaryPackage("{file_name}.skx");')
-                code.append(f'\t\tIScikitLearnPackage binaryPackage = ScikitLearnPackage.loadFromFile(path);\n')
+                code.append(f'\t\tIScikitLearnPackage binaryPackage = ScikitLearnPackageFactory.loadFromFile(path);\n')
                 code.append('\t\t// Check header values')
                 code.append(f'\t\tAssertions.assertEquals(1, binaryPackage.getPackageHeader().getFileFormatVersion());')
                 code.append(f'\t\tAssertions.assertEquals("{env.scikit_learn_version}", binaryPackage.getPackageHeader().getScikitLearnVersion());')
@@ -357,6 +358,60 @@ def generate_java_unit_tests(classifier_info, environments, datasets, unit_tests
                     code.append('\t\tNumpyArray<Double> gtLogProbabilities = (NumpyArray<Double>)binaryPackage.getExtraValues().get("prediction_log_probabilities");')
                     code.append('\t\tNumpyArray<Double> logProbabilities = classifier.predictLogProbabilities(x);')
                     code.append('\t\tTestHelper.assertEqualData(logProbabilities, (double[][])gtLogProbabilities.getWrapper().getRawArray());')
+
+                code.append('\t}\n')
+
+    code.append('}')
+    code = '\n'.join(code)
+
+    print(code)
+
+def generate_csharp_unit_tests(classifier_info, environments, datasets, unit_tests):
+    class_name = classifier_info['friendly_name'].replace(' ', '') + 'Tests'
+    support_probabilities = classifier_info['support_probabilities']
+
+    code = []
+    code.append('[TestFixture]')
+    code.append(f'public class {class_name} ' + '{')
+
+    for env in environments:
+        code.append('\t// ------------------------------------------------------------------------')
+        code.append(f'\t// Test for scikit-learn {env.scikit_learn_version} on python {env.python_version}')
+        code.append('\t// ------------------------------------------------------------------------\n')
+        for dataset in datasets:
+            for configuration in classifier_info['configurations']:
+                file_name = (classifier_info['friendly_name'].lower() + ' ' + configuration['config_name'] + ' on ' + dataset).strip().replace(' ', '_')
+                file_name = f'{env.scikit_learn_version}/{env.major_python_version}/{file_name}'
+
+                code.append('\t[Test]')
+                code.append(f'\tpublic void Test{config_name_in_function(configuration["config_name"])}OnPython{env.python_version.replace(".", "_")}WithSkLearn{env.scikit_learn_version.replace(".", "_")}On{config_name_in_function(dataset)}() ' + '{')
+                code.append(f'\t\tString path = TestHelper.GetAbsolutePathOfBinaryPackage("{file_name}.skx");')
+                code.append(f'\t\tIScikitLearnPackage binaryPackage = ScikitLearnPackageFactory.LoadFromFile(path);\n')
+                code.append('\t\t// Check header values')
+                code.append(f'\t\tAssert.AreEqual(1, binaryPackage.PackageHeader.FileFormatVersion);')
+                code.append(f'\t\tAssert.AreEqual("{env.scikit_learn_version}", binaryPackage.PackageHeader.ScikitLearnVersion);')
+                code.append('')
+                code.append('\t\t// Check extra values')
+                code.append(f'\t\tAssert.AreEqual("{dataset}", binaryPackage.ExtraValues["dataset_name"]);')
+                if 'include_feature_names' in configuration.keys():
+                    features = '{' + str(DATASET_FEATURES[dataset])[1:-1].replace("'", '"') + '}'
+                    code.append(f'\t\tTestHelper.AssertCorrectFeatureNames(new String[] {features}, (String[])binaryPackage.ExtraValues["feature_names"]);')
+                code.append('')
+                code.append('\t\t// Check actual computed values')
+                code.append(f'\t\t{classifier_info["target_language_class_name"]} classifier = ({classifier_info["target_language_class_name"]})binaryPackage.GetModel(0);\n')
+                code.append('\t\tNumpyArray<double> x = (NumpyArray<double>)binaryPackage.ExtraValues["training_data"];')
+                code.append('\t\tNumpyArray<long> gtPredictions = (NumpyArray<long>)binaryPackage.ExtraValues["predictions"];')
+                code.append('\t\tNumpyArray<long> predictions = classifier.Predict(x);')
+                code.append('\t\tTestHelper.AssertEqualPredictions(predictions, (long[])gtPredictions.GetWrapper().RawArray);')
+                if support_probabilities:
+                    code.append('')
+                    code.append('\t\tNumpyArray<double> gtProbabilities = (NumpyArray<double>)binaryPackage.ExtraValues["prediction_probabilities"];')
+                    code.append('\t\tNumpyArray<double> probabilities = classifier.PredictProbabilities(x);')
+                    code.append('\t\tTestHelper.AssertEqualData(probabilities, (double[,])gtProbabilities.GetWrapper().RawArray);')
+                    code.append('')
+                    code.append('\t\tNumpyArray<double> gtLogProbabilities = (NumpyArray<double>)binaryPackage.ExtraValues["prediction_log_probabilities"];')
+                    code.append('\t\tNumpyArray<double> logProbabilities = classifier.PredictLogProbabilities(x);')
+                    code.append('\t\tTestHelper.AssertEqualData(logProbabilities, (double[,])gtLogProbabilities.GetWrapper().RawArray);')
 
                 code.append('\t}\n')
 

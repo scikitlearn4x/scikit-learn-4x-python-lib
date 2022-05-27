@@ -1,7 +1,7 @@
+from deploy_utils import *
 import sys
 import shutil
 from time import sleep
-from deploy_utils import *
 
 CONDA_ENV_FOR_LIB = 'develop_xklearn_lib'
 CONDA_ENV_FOR_LIB_VERSION = '3.8'

@@ -8,7 +8,6 @@ class GaussianNaiveBayesSerializer(BaseSerializer):
 
     def get_fields_to_be_serialized(self, model, version):
         fields = []
-        self.add_field(fields, 'epsilon_', model.epsilon_)
         self.add_field(fields, 'classes_', model.classes_)
         self.add_field(fields, 'class_count_', model.class_count_)
         self.add_field(fields, 'class_prior_', model.class_prior_)
