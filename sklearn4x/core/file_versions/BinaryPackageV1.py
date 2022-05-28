@@ -22,9 +22,9 @@ class BinaryPackageV1(BinaryPackage):
 
         self.buffer.append_dictionary(header_data)
 
-    def append_serialized_model(self, model, serializer):
+    def append_serialized_model(self, model_name, model, serializer):
         version = self.get_scikit_learn_version()
-        serializer.serialize_model(self.buffer, model, version)
+        serializer.serialize_model(self.buffer, model_name, model, version)
 
     def add_additional_data(self, dictionary):
         self.buffer.append_dictionary(dictionary)

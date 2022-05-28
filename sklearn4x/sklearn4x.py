@@ -1,3 +1,5 @@
+from typing import *
+
 import sklearn
 from sklearn.base import BaseEstimator
 from sklearn.naive_bayes import GaussianNB
@@ -6,37 +8,61 @@ from .core.BinaryBuffer import BinaryBuffer
 from .core.BinaryPackage import BinaryPackage
 from .serializers.naive_bayes.GaussianNaiveBayesSerializer import GaussianNaiveBayesSerializer
 
+__all__ = [
+    'save_scikit_learn_model'
+]
+
 SERIALIZERS = [
     (GaussianNB, GaussianNaiveBayesSerializer())
 ]
 
 
-def save_scikit_learn_model(models, path, additional_data=None):
-    if not isinstance(models, list):
-        models = [models]
+def __ensure_input_is_valid(models):
+    if not isinstance(models, dict):
+        raise Exception('The models parameter should be a dictionary of {name: model_object}.')
 
-    for i, model in enumerate(models):
+    for model_name in models.keys():
+        model = models[model_name]
+
         if not isinstance(model, BaseEstimator):
-            raise Exception(f'The model provided at index {i} is not an scikit-learn BaseEstimator')
+            raise Exception(f'The model provided with key "{model_name}" is not an scikit-learn BaseEstimator')
+
+
+def save_scikit_learn_model(models: Dict[str, Any], path: str, additional_data=None) -> None:
+    """
+    Take a dictionary of scikit-learn objects and serialize them in a single binary package file.
+
+    :param models: Dictionary of the scikit-learn objects. The key for each model is later used to
+                   access that object in other languages.
+    :param path: Path to save the model in.
+    :param additional_data: A dictionary of extra values that should be included in the binary
+                            package.
+    :return: None
+    """
+
+    __ensure_input_is_valid(models)
 
     content = []
-    for model in models:
+    for model_name in models.keys():
+        model = models[model_name]
+        found = False
         for type, serializer in SERIALIZERS:
             if isinstance(model, type):
-                content.append((model, serializer))
+                content.append((model_name, model, serializer))
+                found = True
                 break
 
-    if len(content) != len(models):
-        raise Exception(f'The models provided contains unsupported types.')
+        if not found:
+            raise Exception(f'The model provided with key "{model_name}" is an unsupported types.')
 
     # Prepare file header
     buffer = BinaryBuffer()
     package = BinaryPackage.default(buffer)
-    package.create_file_header([serializer for model, serializer in content])
+    package.create_file_header([serializer for model_name, model, serializer in content])
 
     # Append models
-    for model, serializer in content:
-        package.append_serialized_model(model, serializer)
+    for model_name, model, serializer in content:
+        package.append_serialized_model(model_name, model, serializer)
 
     # Add additional data
     if additional_data is not None:

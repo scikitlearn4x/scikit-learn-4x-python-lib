@@ -8,9 +8,10 @@ class BaseSerializer:
     def identifier(self):
         pass
 
-    def serialize_model(self, buffer: BinaryBuffer, model, version):
+    def serialize_model(self, buffer: BinaryBuffer, model_name, model, version):
         fields = self.get_fields_to_be_serialized(model, version)
 
+        buffer.append_string(model_name)
         buffer.append_int(len(fields))
         for name, value in fields:
             buffer.append_string(name)

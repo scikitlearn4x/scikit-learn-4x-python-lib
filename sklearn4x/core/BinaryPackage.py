@@ -15,7 +15,7 @@ class BinaryPackage:
         pass
 
     @abstractmethod
-    def append_serialized_model(self, model, serializer):
+    def append_serialized_model(self, model_name, model, serializer):
         pass
 
     @abstractmethod
