@@ -16,7 +16,9 @@ class GaussianNaiveBayesSerializer(BaseSerializer):
             self.add_field(fields, 'var_', model.var_)
         else:
             self.add_field(fields, 'var_', model.sigma_)
-        self.add_field(fields, 'n_features_in_', model.n_features_in_, version, min_version='0.24')
+
+        if hasattr(model, 'n_features_in_'):
+            self.add_field(fields, 'n_features_in_', model.n_features_in_)
 
         if hasattr(model, 'feature_names_in_'):
             self.add_field(fields, 'feature_names_in_', self.to_array_of_string(model.feature_names_in_))

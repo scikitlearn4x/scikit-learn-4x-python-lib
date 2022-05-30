@@ -56,6 +56,8 @@ class BaseSerializer:
 
             if i1 > i2:
                 return True
+            elif i1 < i2:
+                return False
 
         return False
 
