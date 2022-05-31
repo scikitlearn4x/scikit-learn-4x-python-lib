@@ -29,5 +29,6 @@ if support_probabilities:
     test_data["prediction_probabilities"] = classifier.predict_proba(X)
     test_data["prediction_log_probabilities"] = classifier.predict_log_proba(X)
 
-
-save_scikit_learn_model({'tt':classifier}, "/Users/yektaie/Documents/Unit Test Generation/binaries/0.22.1/3.8/gaussian_naive_bayes_simplest_base_case_without_customization_on_iris.skx", test_data)
+save_scikit_learn_model({'classifier_to_test': classifier},
+                        "/Users/yektaie/Documents/Unit Test Generation/binaries/0.20.0/3.7/gaussian_naive_bayes_simplest_base_case_without_customization_on_iris.skx",
+                        test_data)

@@ -12,7 +12,8 @@ class GaussianNaiveBayesSerializer(BaseSerializer):
         self.add_field(fields, 'class_count_', model.class_count_)
         self.add_field(fields, 'class_prior_', model.class_prior_)
         self.add_field(fields, 'theta_', model.theta_)
-        if self.is_version_higher(version, '1.0'):
+
+        if hasattr(model, 'var_'):
             self.add_field(fields, 'var_', model.var_)
         else:
             self.add_field(fields, 'var_', model.sigma_)
