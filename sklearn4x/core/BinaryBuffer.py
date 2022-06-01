@@ -91,7 +91,7 @@ class BinaryBuffer:
             self.append_int(len(shape))
 
             if value.dtype.name not in self.__numpy_type_mapper:
-                raise Exception(f'The type {value.dtype.name} is not supported!')
+                raise Exception('The type ' + value.dtype.name + ' is not supported!')
 
             fmt, element_type = self.__numpy_type_mapper[value.dtype.name]
             self.append_byte(element_type)

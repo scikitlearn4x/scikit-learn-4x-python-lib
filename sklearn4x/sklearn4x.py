@@ -25,7 +25,7 @@ def __ensure_input_is_valid(models):
         model = models[model_name]
 
         if not isinstance(model, BaseEstimator):
-            raise Exception(f'The model provided with key "{model_name}" is not an scikit-learn BaseEstimator')
+            raise Exception('The model provided with key "' + model_name + '" is not an scikit-learn BaseEstimator')
 
 
 def save_scikit_learn_model(models: Dict[str, Any], path: str, additional_data=None) -> None:
@@ -53,7 +53,7 @@ def save_scikit_learn_model(models: Dict[str, Any], path: str, additional_data=N
                 break
 
         if not found:
-            raise Exception(f'The model provided with key "{model_name}" is an unsupported types.')
+            raise Exception('The model provided with key "' + model_name + '" is an unsupported types.')
 
     # Prepare file header
     buffer = BinaryBuffer()
