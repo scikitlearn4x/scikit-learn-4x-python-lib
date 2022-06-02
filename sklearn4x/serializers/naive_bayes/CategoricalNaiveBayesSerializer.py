@@ -1,7 +1,7 @@
 from sklearn4x.core.BaseSerializer import BaseSerializer
 
 
-class CategoricalBayesSerializer(BaseSerializer):
+class CategoricalNaiveBayesSerializer(BaseSerializer):
     def identifier(self):
         return 'nb_categorical_serializer'
 

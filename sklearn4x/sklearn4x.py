@@ -2,22 +2,14 @@ from typing import *
 
 import sklearn
 from sklearn.base import BaseEstimator
-from sklearn.naive_bayes import *
 
 from .core.BinaryBuffer import BinaryBuffer
 from .core.BinaryPackage import BinaryPackage
-from .serializers.naive_bayes import *
+from .serializers.serializers_list import LIST_OF_SERIALIZERS
+
 
 __all__ = [
     'save_scikit_learn_model'
-]
-
-SERIALIZERS = [
-    (GaussianNB, GaussianNaiveBayesSerializer()),
-    (BernoulliNB, BernoulliNaiveBayesSerializer()),
-    (MultinomialNB, MultinomialNaiveBayesSerializer()),
-    (ComplementNB, ComplementNaiveBayesSerializer()),
-    (CategoricalNB, CategoricalBayesSerializer()),
 ]
 
 
@@ -50,7 +42,7 @@ def save_scikit_learn_model(models: Dict[str, Any], path: str, additional_data=N
     for model_name in models.keys():
         model = models[model_name]
         found = False
-        for type, serializer in SERIALIZERS:
+        for type, serializer in LIST_OF_SERIALIZERS:
             if isinstance(model, type):
                 content.append((model_name, model, serializer))
                 found = True

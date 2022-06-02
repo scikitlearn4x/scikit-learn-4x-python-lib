@@ -1,13 +1,13 @@
 from .GaussianNaiveBayesSerializer import *
 from .BernoulliNaiveBayesSerializer import *
 from .MultinomialNaiveBayesSerializer import *
-from .CategoricalBayesSerializer import *
+from .CategoricalNaiveBayesSerializer import *
 from .ComplementNaiveBayesSerializer import *
 
 __all__ = [
     'GaussianNaiveBayesSerializer',
     'MultinomialNaiveBayesSerializer',
-    'CategoricalBayesSerializer',
+    'CategoricalNaiveBayesSerializer',
     'BernoulliNaiveBayesSerializer',
     'ComplementNaiveBayesSerializer',
 ]
