@@ -1,6 +1,6 @@
 import sklearn
 from sklearn import datasets
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import *
 from sklearn4x.sklearn4x import save_scikit_learn_model
 import pandas as pd
 
@@ -14,7 +14,7 @@ y = ds.target
 
 train_data = X
 
-classifier = GaussianNB()
+classifier = BernoulliNB()
 classifier.fit(train_data, y)
 
 predictions = classifier.predict(X)

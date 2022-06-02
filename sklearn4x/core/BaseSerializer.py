@@ -25,7 +25,9 @@ class BaseSerializer:
         if version is None and min_version is None and max_version is None:
             fields.append((name, value))
 
-        if self.is_version_higher(version, min_version, True) and self.is_version_higher(max_version, version, False):
+        if min_version is None and max_version is not None and self.is_version_higher(max_version, version):
+            fields.append((name, value))
+        elif self.is_version_higher(version, min_version, True) and self.is_version_higher(max_version, version, False):
             fields.append((name, value))
 
     def to_array_of_string(self, numpy_array):
