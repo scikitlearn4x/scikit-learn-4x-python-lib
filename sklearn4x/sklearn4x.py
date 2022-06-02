@@ -2,18 +2,22 @@ from typing import *
 
 import sklearn
 from sklearn.base import BaseEstimator
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import *
 
 from .core.BinaryBuffer import BinaryBuffer
 from .core.BinaryPackage import BinaryPackage
-from .serializers.naive_bayes.GaussianNaiveBayesSerializer import GaussianNaiveBayesSerializer
+from .serializers.naive_bayes import *
 
 __all__ = [
     'save_scikit_learn_model'
 ]
 
 SERIALIZERS = [
-    (GaussianNB, GaussianNaiveBayesSerializer())
+    (GaussianNB, GaussianNaiveBayesSerializer()),
+    (BernoulliNB, BernoulliNaiveBayesSerializer()),
+    (MultinomialNB, MultinomialNaiveBayesSerializer()),
+    (ComplementNB, ComplementNaiveBayesSerializer()),
+    (CategoricalNB, CategoricalBayesSerializer()),
 ]
 
 

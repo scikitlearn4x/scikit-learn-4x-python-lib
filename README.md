@@ -140,9 +140,7 @@ Console.Writeline($"First data point log probabilities: {logProbabilities.Get(0,
 
 ## Supported Models
 
-The following models are currently supported:
-
-TODO: Fill the supported models.
+See the [release notes](https://github.com/scikitlearn4x/scikit-learn-4x-python-lib/blob/master/ReleaseNotes.md) for most updated support.
 
 ## Help and Support
 

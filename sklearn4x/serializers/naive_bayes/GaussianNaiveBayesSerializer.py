@@ -1,5 +1,4 @@
 from sklearn4x.core.BaseSerializer import BaseSerializer
-from sklearn4x.core.BinaryBuffer import BinaryBuffer
 
 
 class GaussianNaiveBayesSerializer(BaseSerializer):
