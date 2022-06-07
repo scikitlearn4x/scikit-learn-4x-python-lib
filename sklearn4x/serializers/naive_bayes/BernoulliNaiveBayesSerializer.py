@@ -13,6 +13,7 @@ class BernoulliNaiveBayesSerializer(BaseSerializer):
         self.add_field(fields, 'class_log_prior_', model.class_log_prior_)
         self.add_field(fields, 'feature_count_', model.feature_count_)
         self.add_field(fields, 'feature_log_prob_', model.feature_log_prob_)
+        self.add_field(fields, 'binarize', model.binarize)
         self.add_field(fields, 'n_features_', model.n_features_, version, max_version='1.2')
         self.add_field(fields, 'n_features_in_', model.n_features_in_, version, min_version='0.24')
 
