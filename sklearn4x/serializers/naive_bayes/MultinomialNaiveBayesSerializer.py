@@ -13,9 +13,7 @@ class MultinomialNaiveBayesSerializer(BaseSerializer):
         self.add_field(fields, 'feature_count_', model.feature_count_)
         self.add_field(fields, 'feature_log_prob_', model.feature_log_prob_)
 
-        self.add_field(fields, 'n_features_', model.n_features_, version, max_version='1.2')
-        self.add_field(fields, 'n_features_in_', model.n_features_in_, version, min_version='0.24')
+        self.add_n_features(fields, model)
+        self.add_feature_names(fields, model)
 
-        if hasattr(model, 'feature_names_in_'):
-            self.add_field(fields, 'feature_names_in_', self.to_array_of_string(model.feature_names_in_))
         return fields

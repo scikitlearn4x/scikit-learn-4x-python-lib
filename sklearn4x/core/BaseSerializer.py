@@ -21,6 +21,16 @@ class BaseSerializer:
     def get_fields_to_be_serialized(self, model, version):
         pass
 
+    def add_n_features(self, fields, model):
+        if hasattr(model, 'n_features_'):
+            self.add_field(fields, 'n_features', model.n_features_)
+        elif hasattr(model, 'n_features_in_'):
+            self.add_field(fields, 'n_features', model.n_features_in_)
+
+    def add_feature_names(self, fields, model):
+        if hasattr(model, 'feature_names_in_'):
+            self.add_field(fields, 'feature_names', self.to_array_of_string(model.feature_names_in_))
+
     def add_field(self, fields, name, value, version=None, min_version=None, max_version=None):
         if version is None and min_version is None and max_version is None:
             fields.append((name, value))
