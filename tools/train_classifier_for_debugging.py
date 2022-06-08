@@ -1,10 +1,13 @@
 import sklearn
 from sklearn import datasets
-from sklearn.naive_bayes import BernoulliNB, ComplementNB, MultinomialNB
+from sklearn.naive_bayes import CategoricalNB
 from sklearn4x.sklearn4x import save_scikit_learn_model
 import pandas as pd
+import warnings
 
-print('scikit-learn version: ' + sklearn.__version__)
+warnings.filterwarnings("ignore")
+
+# print('scikit-learn version: ' + sklearn.__version__)
 
 support_probabilities = True
 
@@ -14,7 +17,7 @@ y = ds.target
 
 train_data = X
 
-classifier = MultinomialNB()
+classifier = CategoricalNB()
 classifier.fit(train_data, y)
 
 predictions = classifier.predict(X)
@@ -32,5 +35,5 @@ if support_probabilities:
     test_data["prediction_probabilities"] = classifier.predict_proba(X)
     test_data["prediction_log_probabilities"] = classifier.predict_log_proba(X)
 
-save_scikit_learn_model({'classifier_to_test': classifier}, "/Users/yektaie/Desktop/bernoulli_naive_bayes_with_explicit_binarize_on_iris.skx", test_data)
+save_scikit_learn_model({'classifier_to_test': classifier}, "/Users/yektaie/Documents/Generated Unit Tests/binaries/1.0.1/3.8/categorical_naive_bayes_simplest_base_case_without_customization_on_iris.skx", test_data)
 
