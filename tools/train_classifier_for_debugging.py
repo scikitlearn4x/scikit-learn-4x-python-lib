@@ -1,6 +1,6 @@
 import sklearn
 from sklearn import datasets
-from sklearn.naive_bayes import CategoricalNB, ComplementNB
+from sklearn.naive_bayes import CategoricalNB, ComplementNB, GaussianNB
 from sklearn4x.sklearn4x import save_scikit_learn_model
 import pandas as pd
 import warnings
@@ -17,9 +17,8 @@ y = ds.target
 
 train_data = X
 
-classifier = ComplementNB()
+classifier = GaussianNB()
 classifier.fit(train_data, y)
-classifier.classes_
 
 predictions = classifier.predict(X)
 

@@ -34,8 +34,7 @@ class BaseSerializer:
     def add_field(self, fields, name, value, version=None, min_version=None, max_version=None):
         if version is None and min_version is None and max_version is None:
             fields.append((name, value))
-
-        if min_version is None and max_version is not None and self.is_version_higher(max_version, version):
+        elif min_version is None and max_version is not None and self.is_version_higher(max_version, version):
             fields.append((name, value))
         elif self.is_version_higher(version, min_version, True) and self.is_version_higher(max_version, version, False):
             fields.append((name, value))
