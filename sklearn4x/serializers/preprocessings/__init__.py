@@ -4,6 +4,7 @@ from .MultiLabelBinarizerSerializer import *
 from .MinMaxScalerSerializer import *
 from .StandardScalerSerializer import *
 from .MaxAbsScalerSerializer import *
+from .RobustScalerSerializer import *
 
 __all__ = [
     'LabelEncoderSerializer',
@@ -12,4 +13,5 @@ __all__ = [
     'MinMaxScalerSerializer',
     'StandardScalerSerializer',
     'MaxAbsScalerSerializer',
+    'RobustScalerSerializer',
 ]

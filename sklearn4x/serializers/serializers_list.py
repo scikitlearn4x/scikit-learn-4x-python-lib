@@ -32,6 +32,7 @@ def load_preprocessing_serializers():
     add_sklearn_type('MinMaxScaler', MinMaxScalerSerializer())
     add_sklearn_type('StandardScaler', StandardScalerSerializer())
     add_sklearn_type('MaxAbsScaler', MaxAbsScalerSerializer())
+    add_sklearn_type('RobustScaler', RobustScalerSerializer())
 
 
 def load_list_of_serializers():
