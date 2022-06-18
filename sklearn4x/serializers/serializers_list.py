@@ -29,6 +29,7 @@ def load_preprocessing_serializers():
     add_sklearn_type('LabelEncoder', LabelEncoderSerializer())
     add_sklearn_type('LabelBinarizer', LabelBinarizerSerializer())
     add_sklearn_type('MultiLabelBinarizer', MultiLabelBinarizerSerializer())
+    add_sklearn_type('MinMaxScaler', MinMaxScalerSerializer())
 
 
 def load_list_of_serializers():
