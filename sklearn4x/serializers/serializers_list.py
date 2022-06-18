@@ -1,6 +1,10 @@
 from .naive_bayes import *
 from sklearn.naive_bayes import *
 
+from .preprocessings import *
+from sklearn.preprocessing import *
+
+
 LIST_OF_SERIALIZERS = []
 
 
@@ -13,7 +17,7 @@ def add_sklearn_type(cls, serializer):
         pass
 
 
-def load_nb_serializers():
+def load_naive_bayes_serializers():
     add_sklearn_type('GaussianNB', GaussianNaiveBayesSerializer())
     add_sklearn_type('BernoulliNB', BernoulliNaiveBayesSerializer())
     add_sklearn_type('MultinomialNB', MultinomialNaiveBayesSerializer())
@@ -21,8 +25,13 @@ def load_nb_serializers():
     add_sklearn_type('CategoricalNB', CategoricalNaiveBayesSerializer())
 
 
+def load_preprocessing_serializers():
+    add_sklearn_type('LabelEncoder', LabelEncoderSerializer())
+
+
 def load_list_of_serializers():
-    load_nb_serializers()
+    load_naive_bayes_serializers()
+    load_preprocessing_serializers()
 
 
 if len(LIST_OF_SERIALIZERS) == 0:
