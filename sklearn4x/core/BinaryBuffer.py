@@ -189,7 +189,7 @@ class BinaryBuffer:
             self.append_list(value)
         elif isinstance(value, float):
             self.append_double(value)
-        elif isinstance(value, int):
+        elif isinstance(value, int) or isinstance(value, np.int64):
             self.append_long(value)
         elif isinstance(value, str):
             self.append_string(value)

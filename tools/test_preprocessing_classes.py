@@ -10,7 +10,7 @@ def main():
     # targets = ['a', 'a', 'c', 'd', 'a', 'd', 'b', 'b', 'c']
     ds = load_iris()
     data = ds.data
-    encoder = MinMaxScaler()
+    encoder = StandardScaler()
 
     encoder.fit(data)
     generate_code(encoder)
