@@ -28,6 +28,7 @@ def load_naive_bayes_serializers():
 def load_preprocessing_serializers():
     add_sklearn_type('LabelEncoder', LabelEncoderSerializer())
     add_sklearn_type('LabelBinarizer', LabelBinarizerSerializer())
+    add_sklearn_type('MultiLabelBinarizer', MultiLabelBinarizerSerializer())
 
 
 def load_list_of_serializers():

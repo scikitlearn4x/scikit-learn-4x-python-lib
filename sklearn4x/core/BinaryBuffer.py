@@ -193,6 +193,8 @@ class BinaryBuffer:
             self.append_long(value)
         elif isinstance(value, str):
             self.append_string(value)
+        elif isinstance(value, dict):
+            self.append_dictionary(value)
         else:
             raise Exception('This type is not supported.')
 
