@@ -1,8 +1,9 @@
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import *
 from sklearn4x.sklearn4x import save_scikit_learn_model
 
-targets = ['a', 'a', 'c', 'd', 'a', 'd', 'b', 'b', 'c']
-encoder = LabelEncoder()
+# targets = ['a', 'a', 'c', 'd', 'a', 'd', 'b', 'b', 'c']
+targets = [1,2,3,4,1,2,3]
+encoder = LabelBinarizer()
 
 encoder.fit(targets)
 print(encoder.transform(targets))
