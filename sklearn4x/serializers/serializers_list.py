@@ -35,6 +35,7 @@ def load_preprocessing_serializers():
     add_sklearn_type('RobustScaler', RobustScalerSerializer())
     add_sklearn_type('Normalizer', NormalizerSerializer())
     add_sklearn_type('Binarizer', BinarizerSerializer())
+    add_sklearn_type('QuantileTransformer', QuantileTransformerSerializer())
 
 
 def load_list_of_serializers():
