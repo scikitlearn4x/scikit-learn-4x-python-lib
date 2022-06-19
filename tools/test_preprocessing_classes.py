@@ -7,13 +7,13 @@ from sklearn4x.sklearn4x import save_scikit_learn_model
 
 
 def main():
-    # targets = ['a', 'a', 'c', 'd', 'a', 'd', 'b', 'b', 'c']
-    ds = load_iris()
-    data = ds.data
-    encoder = SplineTransformer()
+    # targets = load_iris().data[0:15]
+    targets = [[1.0, 0.5], [0.0, 0.4], [0.5, 0.2]]
+    encoder = MinMaxScaler(clip=False)
 
-    encoder.fit(data)
-    generate_code(encoder)
+    encoder.fit(targets)
+    print(encoder.transform([[3.0, 1.5]]))
+    # generate_code(encoder)
 
     print('')
     print('')

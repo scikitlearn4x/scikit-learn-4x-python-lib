@@ -13,7 +13,7 @@ class MinMaxScalerSerializer(BaseSerializer):
         self.add_field(fields, "data_max_", model.data_max_)
         self.add_field(fields, "data_min_", model.data_min_)
         self.add_field(fields, "data_range_", model.data_range_)
-        self.add_field(fields, "feature_range", model.feature_range)
+        self.add_field(fields, "feature_range", list(model.feature_range))
         self.add_field(fields, "min_", model.min_)
         self.add_field(fields, "n_features_in_", model.n_features_in_)
         self.add_field(fields, "n_samples_seen_", model.n_samples_seen_)

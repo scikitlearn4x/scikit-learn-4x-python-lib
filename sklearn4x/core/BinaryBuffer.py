@@ -148,6 +148,9 @@ class BinaryBuffer:
             self.append_int(len(value))
 
             for element in value:
+                if isinstance(element, set) or isinstance(element, tuple):
+                    element = list(element)
+
                 if element is None:
                     self.append_byte(ELEMENT_TYPE_NONE)
                 elif self.__is_primitive_value(element):
@@ -163,19 +166,23 @@ class BinaryBuffer:
             self.append_int(len(value))
 
             for key in value.keys():
-                self.append_string(key)
+                self.append_string(str(key))
                 element = value[key]
 
                 if element is None:
                     self.append_byte(ELEMENT_TYPE_NONE)
-                elif self.__is_string_array(element):
-                    self.append_byte(ELEMENT_TYPE_STRING_ARRAY)
-                    self.append_array_of_string(element)
-                elif self.__is_primitive_value(element):
-                    self.__append_primitive_value(element)
                 else:
-                    raise Exception(
-                        'An error occurred when serializing a dictionary. Only string key and primitive values are supported.')
+                    if isinstance(element, set) or isinstance(element, tuple):
+                        element = list(element)
+
+                    if self.__is_string_array(element):
+                        self.append_byte(ELEMENT_TYPE_STRING_ARRAY)
+                        self.append_array_of_string(element)
+                    elif self.__is_primitive_value(element):
+                        self.__append_primitive_value(element)
+                    else:
+                        raise Exception(
+                            'An error occurred when serializing a dictionary. Only string key and primitive values are supported.')
 
     def __is_primitive_value(self, value):
         return type(value) in self.__primitive_type_mapper.keys()
