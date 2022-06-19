@@ -10,8 +10,7 @@ def main():
     # targets = ['a', 'a', 'c', 'd', 'a', 'd', 'b', 'b', 'c']
     ds = load_iris()
     data = ds.data
-    encoder = OrdinalEncoder()
-    # encoder = OneHotEncoder()
+    encoder = PolynomialFeatures()
 
     encoder.fit(data)
     generate_code(encoder)
