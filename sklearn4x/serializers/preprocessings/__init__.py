@@ -9,6 +9,8 @@ from .NormalizerSerializer import *
 from .BinarizerSerializer import *
 from .QuantileTransformerSerializer import *
 from .PowerTransformerSerializer import *
+from .KBinsDiscretizerSerializer import *
+from .OneHotEncoderSerializer import *
 
 __all__ = [
     'LabelEncoderSerializer',
@@ -22,4 +24,6 @@ __all__ = [
     'BinarizerSerializer',
     'QuantileTransformerSerializer',
     'PowerTransformerSerializer',
+    'KBinsDiscretizerSerializer',
+    'OneHotEncoderSerializer',
 ]

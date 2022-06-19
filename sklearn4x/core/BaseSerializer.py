@@ -43,6 +43,9 @@ class BaseSerializer:
             self.add_field(fields, 'feature_names', self.to_array_of_string(model.feature_names_in_))
 
     def add_field(self, fields, name, value, version=None, min_version=None, max_version=None):
+        if value is None:
+            return
+
         if version is None and min_version is None and max_version is None:
             fields.append((name, value))
         elif min_version is None and max_version is not None and self.is_version_higher(max_version, version):
