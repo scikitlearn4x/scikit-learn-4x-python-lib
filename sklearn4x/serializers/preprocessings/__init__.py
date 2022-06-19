@@ -11,6 +11,7 @@ from .QuantileTransformerSerializer import *
 from .PowerTransformerSerializer import *
 from .KBinsDiscretizerSerializer import *
 from .OneHotEncoderSerializer import *
+from .OrdinalEncoderSerializer import *
 
 __all__ = [
     'LabelEncoderSerializer',
@@ -26,4 +27,5 @@ __all__ = [
     'PowerTransformerSerializer',
     'KBinsDiscretizerSerializer',
     'OneHotEncoderSerializer',
+    'OrdinalEncoderSerializer',
 ]

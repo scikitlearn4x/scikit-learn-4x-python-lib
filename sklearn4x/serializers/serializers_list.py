@@ -39,6 +39,7 @@ def load_preprocessing_serializers():
     add_sklearn_type('PowerTransformer', PowerTransformerSerializer())
     add_sklearn_type('KBinsDiscretizer', KBinsDiscretizerSerializer())
     add_sklearn_type('OneHotEncoder', OneHotEncoderSerializer())
+    add_sklearn_type('OrdinalEncoder', OrdinalEncoderSerializer())
 
 
 def load_list_of_serializers():
