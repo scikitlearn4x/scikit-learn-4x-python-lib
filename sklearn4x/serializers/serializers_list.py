@@ -5,13 +5,13 @@ from .preprocessings import *
 from sklearn.preprocessing import *
 
 
-LIST_OF_SERIALIZERS = []
+LIST_OF_SERIALIZERS = {}
 
 
 def add_sklearn_type(cls, serializer):
     try:
         classifier_type = eval(compile(cls, f'{cls}_dynamic.py', 'eval'))
-        LIST_OF_SERIALIZERS.append((classifier_type, serializer))
+        LIST_OF_SERIALIZERS[classifier_type] = serializer
     except NameError as ex:
         # Ignore the type, it is not supported by this version of sklearn.
         pass
@@ -36,6 +36,7 @@ def load_preprocessing_serializers():
     add_sklearn_type('Normalizer', NormalizerSerializer())
     add_sklearn_type('Binarizer', BinarizerSerializer())
     add_sklearn_type('QuantileTransformer', QuantileTransformerSerializer())
+    add_sklearn_type('PowerTransformer', PowerTransformerSerializer())
 
 
 def load_list_of_serializers():

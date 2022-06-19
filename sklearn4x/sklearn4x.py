@@ -42,7 +42,8 @@ def save_scikit_learn_model(models: Dict[str, Any], path: str, additional_data=N
     for model_name in models.keys():
         model = models[model_name]
         found = False
-        for type, serializer in LIST_OF_SERIALIZERS:
+        for type in LIST_OF_SERIALIZERS.keys():
+            serializer = LIST_OF_SERIALIZERS[type]
             if isinstance(model, type):
                 content.append((model_name, model, serializer))
                 found = True

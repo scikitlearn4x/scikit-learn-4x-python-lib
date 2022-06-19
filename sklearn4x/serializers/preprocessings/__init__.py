@@ -8,6 +8,7 @@ from .RobustScalerSerializer import *
 from .NormalizerSerializer import *
 from .BinarizerSerializer import *
 from .QuantileTransformerSerializer import *
+from .PowerTransformerSerializer import *
 
 __all__ = [
     'LabelEncoderSerializer',
@@ -20,4 +21,5 @@ __all__ = [
     'NormalizerSerializer',
     'BinarizerSerializer',
     'QuantileTransformerSerializer',
+    'PowerTransformerSerializer',
 ]
