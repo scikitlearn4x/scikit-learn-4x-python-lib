@@ -19,6 +19,7 @@ ELEMENT_TYPE_DICTIONARY = 0x41
 ELEMENT_TYPE_NUMPY_ARRAY = 0x42
 ELEMENT_TYPE_STRING_ARRAY = 0x43
 ELEMENT_TYPE_NONE = 0x10
+ELEMENT_TYPE_BOOLEAN = 0x19
 
 
 class BinaryBuffer:
@@ -26,6 +27,7 @@ class BinaryBuffer:
         self.__data = []
         self.__primitive_type_mapper = {
             str: (ELEMENT_TYPE_STRING, self.append_string),
+            bool: (ELEMENT_TYPE_BOOLEAN, self.append_boolean),
             int: (ELEMENT_TYPE_LONG, self.append_long),
             float: (ELEMENT_TYPE_DOUBLE, self.append_double),
             list: (ELEMENT_TYPE_LIST, self.append_list),
@@ -58,6 +60,12 @@ class BinaryBuffer:
         else:
             self.append_byte(1)
             self.__data.append(struct.pack('d', value))
+
+    def append_boolean(self, value: bool) -> None:
+        if value:
+            self.append_byte(1)
+        else:
+            self.append_byte(0)
 
     def append_byte(self, value: int) -> None:
         self.__data.append(struct.pack('b', value))

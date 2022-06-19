@@ -41,6 +41,7 @@ def load_preprocessing_serializers():
     add_sklearn_type('OneHotEncoder', OneHotEncoderSerializer())
     add_sklearn_type('OrdinalEncoder', OrdinalEncoderSerializer())
     add_sklearn_type('PolynomialFeatures', PolynomialFeaturesSerializer())
+    add_sklearn_type('SplineTransformer', SplineTransformerSerializer())
 
 
 def load_list_of_serializers():

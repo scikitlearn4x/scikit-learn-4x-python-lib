@@ -13,6 +13,7 @@ from .KBinsDiscretizerSerializer import *
 from .OneHotEncoderSerializer import *
 from .OrdinalEncoderSerializer import *
 from .PolynomialFeaturesSerializer import *
+from .SplineTransformerSerializer import *
 
 __all__ = [
     'LabelEncoderSerializer',
@@ -30,4 +31,5 @@ __all__ = [
     'OneHotEncoderSerializer',
     'OrdinalEncoderSerializer',
     'PolynomialFeaturesSerializer',
+    'SplineTransformerSerializer',
 ]
