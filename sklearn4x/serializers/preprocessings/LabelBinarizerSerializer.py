@@ -13,7 +13,11 @@ class LabelBinarizerSerializer(BaseSerializer):
     def get_fields_to_be_serialized(self, model, version):
         fields = []
 
-        self.add_field(fields, "classes_", self.get_value_or_none(model, "classes_"))
+        classes_ = self.get_value_or_none(model, "classes_")
+        if classes_ is not None:
+            classes_ = classes_.tolist()
+        self.add_field(fields, "classes_", classes_)
+
         self.add_field(fields, 'neg_label', model.neg_label)
         self.add_field(fields, 'pos_label', model.pos_label)
         self.add_field(fields, "y_type_", self.get_value_or_none(model, "y_type_"))

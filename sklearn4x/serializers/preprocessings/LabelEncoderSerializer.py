@@ -13,6 +13,9 @@ class LabelEncoderSerializer(BaseSerializer):
     def get_fields_to_be_serialized(self, model, version):
         fields = []
 
-        self.add_field(fields, "classes_", self.get_value_or_none(model, "classes_"))
+        classes_ = self.get_value_or_none(model, "classes_")
+        if classes_ is not None:
+            classes_ = classes_.tolist()
+        self.add_field(fields, "classes_", classes_)
 
         return fields
