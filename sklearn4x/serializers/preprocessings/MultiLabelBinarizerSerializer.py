@@ -1,3 +1,8 @@
+# ==================================================================
+# Serialize MultiLabelBinarizer
+#
+# Scaffolded from: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MultiLabelBinarizer.html#sklearn.preprocessing.MultiLabelBinarizer
+# ==================================================================
 from sklearn4x.core.BaseSerializer import BaseSerializer
 
 
@@ -8,11 +13,7 @@ class MultiLabelBinarizerSerializer(BaseSerializer):
     def get_fields_to_be_serialized(self, model, version):
         fields = []
 
-        if model.classes is not None:
-            self.add_field(fields, 'classes', model.classes)
-
-        self.add_field(fields, 'classes_', model.classes_.tolist())
-        self.add_field(fields, '_cached_dict', model._cached_dict)
-        self.add_field(fields, 'sparse_output', model.sparse_output)
+        self.add_field(fields, "classes_", self.get_value_or_none(model, "classes_"))
+        self.add_field(fields, "_cached_dict", self.get_value_or_none(model, "_cached_dict"))
 
         return fields

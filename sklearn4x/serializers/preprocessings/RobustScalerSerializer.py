@@ -1,3 +1,8 @@
+# ==================================================================
+# Serialize RobustScaler
+#
+# Scaffolded from: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html#sklearn.preprocessing.RobustScaler
+# ==================================================================
 from sklearn4x.core.BaseSerializer import BaseSerializer
 
 
@@ -8,13 +13,16 @@ class RobustScalerSerializer(BaseSerializer):
     def get_fields_to_be_serialized(self, model, version):
         fields = []
 
-        self.add_field(fields, "center_", model.center_)
-        self.add_field(fields, "copy", model.copy)
-        self.add_field(fields, "n_features_in_", model.n_features_in_)
-        self.add_field(fields, "quantile_range", list(model.quantile_range))
-        self.add_field(fields, "scale_", model.scale_)
-        self.add_field(fields, "unit_variance", model.unit_variance)
-        self.add_field(fields, "with_centering", model.with_centering)
-        self.add_field(fields, "with_scaling", model.with_scaling)
+        self.add_field(fields, "center_", self.get_value_or_none(model, "center_"))
+        self.add_field(fields, "with_scaling", self.get_value_or_none(model, "with_scaling"))
+        self.add_field(fields, "with_centering", self.get_value_or_none(model, "with_centering"))
+        self.add_field(fields, "unit_variance", self.get_value_or_none(model, "unit_variance"))
+        self.add_field(fields, "quantile_range", self.get_value_or_none(model, "quantile_range"))
+        self.add_field(fields, "scale_", self.get_value_or_none(model, "scale_"), version=version, min_version='0.17')
+
+        self.add_n_features(fields, model)
+        self.add_feature_names(fields, model)
 
         return fields
+
+

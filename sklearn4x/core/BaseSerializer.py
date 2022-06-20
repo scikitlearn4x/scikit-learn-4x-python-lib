@@ -42,6 +42,12 @@ class BaseSerializer:
         if hasattr(model, 'feature_names_in_'):
             self.add_field(fields, 'feature_names', self.to_array_of_string(model.feature_names_in_))
 
+    def get_value_or_none(self, model, attribute):
+        if hasattr(model, attribute):
+            return getattr(model, attribute)
+
+        return None
+
     def add_field(self, fields, name, value, version=None, min_version=None, max_version=None):
         if value is None:
             return
