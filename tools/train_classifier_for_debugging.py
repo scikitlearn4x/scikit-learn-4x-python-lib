@@ -1,39 +1,30 @@
 import sklearn
 from sklearn import datasets
-from sklearn.naive_bayes import CategoricalNB, ComplementNB, GaussianNB
+from sklearn.preprocessing import OneHotEncoder
 from sklearn4x.sklearn4x import save_scikit_learn_model
-import pandas as pd
+import sklearn.datasets as ds
+import scipy.sparse as sp
+import numpy as np
 import warnings
 
 warnings.filterwarnings("ignore")
 
 # print('scikit-learn version: ' + sklearn.__version__)
 
-support_probabilities = True
+X = ds.load_iris().data
 
-ds = datasets.load_iris()
-X = ds.data
-y = ds.target
+preprocessing = OneHotEncoder(drop="first")
+preprocessing.fit(X)
 
-train_data = X
-
-classifier = GaussianNB()
-classifier.fit(train_data, y)
-
-predictions = classifier.predict(X)
+transformed = preprocessing.transform(X)
+if isinstance(transformed, sp.csr_matrix):
+    transformed = transformed.toarray()
 
 test_data = {
-    "template_version": "classifiers_v1",
-    "dataset_name": "iris",
-    "configurations": [],
-    "training_data": X,
-    "predictions": predictions,
-
+    "template_version": "preprocessings_v1",
+    "configurations": {'config_name': 'with drop first', 'additional_import': 'import sklearn.datasets as ds', 'class_argument': 'drop="first"', 'custom_assertions': [], 'custom_transform_input': 'X', 'input': 'X = ds.load_iris().data'},
+    "raw": X,
+    "transformed": transformed,
 }
 
-if support_probabilities:
-    test_data["prediction_probabilities"] = classifier.predict_proba(X)
-    test_data["prediction_log_probabilities"] = classifier.predict_log_proba(X)
-
-save_scikit_learn_model({'classifier_to_test': classifier}, "/Users/yektaie/Documents/Generated Unit Tests/binaries/1.0.1/3.8/categorical_naive_bayes_simplest_base_case_without_customization_on_iris.skx", test_data)
-
+save_scikit_learn_model({'preprocessing_to_test': preprocessing}, "/Users/yektaie/Documents/Generated Unit Tests/binaries/1.0.2/3.9/one_hot_encoder_with_drop_first.skx", test_data)

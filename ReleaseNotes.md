@@ -10,15 +10,8 @@ Added support for the preprocessing classes:
 * RobustScaler
 * Normalizer
 * Binarizer
-* KernelCenterer
 * QuantileTransformer
 * PowerTransformer
-* KBinsDiscretizer
-* OneHotEncoder
-* OrdinalEncoder
-* FunctionTransformer
-* PolynomialFeatures
-* SplineTransformer
 
 ## 0.0.3
 

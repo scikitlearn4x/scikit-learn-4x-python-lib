@@ -8,7 +8,8 @@ class PowerTransformerSerializer(BaseSerializer):
     def get_fields_to_be_serialized(self, model, version):
         fields = []
 
-        self.add_field(fields, "_scaler", model._scaler)
+        if hasattr(model, "_scaler"):
+            self.add_field(fields, "_scaler", model._scaler)
         self.add_field(fields, "copy", model.copy)
         self.add_field(fields, "lambdas_", model.lambdas_)
         self.add_field(fields, "method", model.method)
