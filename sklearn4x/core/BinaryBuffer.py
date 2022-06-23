@@ -211,7 +211,7 @@ class BinaryBuffer:
         elif isinstance(value, dict):
             self.append_dictionary(value)
         else:
-            raise Exception(f'The type {type(value)} is not supported.')
+            raise Exception('The type ' + str(type(value)) + ' is not supported.')
 
     def __is_string_array(self, value):
         if isinstance(value, list) and len(value) > 0:

@@ -25,8 +25,11 @@ class BaseSerializer:
                 serializer = LIST_OF_SERIALIZERS[_type]
                 serializer.serialize_model(buffer, None, value, version)
             else:
-                buffer.append_string(name)
-                buffer.append_data(value)
+                self.append_field_to_buffer(buffer, name, value)
+
+    def append_field_to_buffer(self, buffer, name, value):
+        buffer.append_string(name)
+        buffer.append_data(value)
 
     @abstractmethod
     def get_fields_to_be_serialized(self, model, version):

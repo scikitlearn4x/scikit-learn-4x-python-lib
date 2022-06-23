@@ -33,9 +33,10 @@ def to_snake(cls):
 
     return result
 
+
 def generate_code(encoder):
     cls = str(type(encoder))[:-2]
-    cls = cls[cls.rindex('.')+1:]
+    cls = cls[cls.rindex('.') + 1:]
     print("from sklearn4x.core.BaseSerializer import BaseSerializer")
     print('')
     print(f'class {cls}Serializer(BaseSerializer):')
@@ -58,3 +59,4 @@ def generate_code(encoder):
 
 if __name__ == '__main__':
     main()
+
