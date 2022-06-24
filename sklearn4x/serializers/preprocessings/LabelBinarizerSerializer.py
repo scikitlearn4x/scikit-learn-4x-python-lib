@@ -23,3 +23,10 @@ class LabelBinarizerSerializer(BaseSerializer):
         self.add_field(fields, "y_type_", self.get_value_or_none(model, "y_type_"))
 
         return fields
+
+    def append_field_to_buffer(self, buffer, name, value):
+        buffer.append_string(name)
+        if name == 'classes_':
+            buffer.append_list(value)
+        else:
+            buffer.append_data(value)
