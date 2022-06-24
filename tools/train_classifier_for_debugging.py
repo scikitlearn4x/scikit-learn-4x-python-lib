@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 
 # print('scikit-learn version: ' + sklearn.__version__)
 
-X = ['a', 'a', 'c', 'd', 'a', 'd', 'b', 'b', 'c']
+X = [1, 2, 2, 6]
 
 preprocessing = LabelEncoder()
 preprocessing.fit(X)
@@ -22,12 +22,12 @@ if isinstance(transformed, sp.csr_matrix):
 
 test_data = {
     "template_version": "preprocessings_v1",
-    "configurations": {'config_name': 'with string labels',
-                       'additional_import': '', 'class_argument': '',
-                       'custom_assertions': [],
-                       'custom_transform_input': 'X', 'input': "X = ['a', 'a', 'c', 'd', 'a', 'd', 'b', 'b', 'c']"},
+    "configurations": {'config_name': 'with int labels', 'additional_import': '', 'class_argument': '',
+                       'custom_assertions': [], 'custom_transform_input': 'X', 'input': 'X = [1, 2, 2, 6]'},
     "raw": X,
     "transformed": transformed,
 }
 
-save_scikit_learn_model({'preprocessing_to_test': preprocessing}, "/Users/yektaie/Documents/Generated Unit Tests/binaries/1.0.2/3.10/label_encoder_with_string_labels.skx", test_data)
+save_scikit_learn_model({'preprocessing_to_test': preprocessing},
+                        "/Users/yektaie/Documents/Unit Test Generation/binaries/0.20.0/3.5/label_encoder_with_int_labels.skx",
+                        test_data)

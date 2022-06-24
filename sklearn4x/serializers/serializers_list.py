@@ -10,7 +10,7 @@ LIST_OF_SERIALIZERS = {}
 
 def add_sklearn_type(cls, serializer):
     try:
-        classifier_type = eval(compile(cls, f'{cls}_dynamic.py', 'eval'))
+        classifier_type = eval(compile(cls, str(cls) + '_dynamic.py', 'eval'))
         LIST_OF_SERIALIZERS[classifier_type] = serializer
     except NameError as ex:
         # Ignore the type, it is not supported by this version of sklearn.
