@@ -19,7 +19,7 @@ class MinMaxScalerSerializer(BaseSerializer):
         self.add_field(fields, "data_range_", self.get_value_or_none(model, "data_range_"), version=version, min_version='0.17')
         self.add_field(fields, "n_samples_seen_", self.get_value_or_none(model, "n_samples_seen_"))
         self.add_field(fields, "feature_range", self.get_value_or_none(model, "feature_range"))
-        self.add_field(fields, "clip", model.clip)
+        self.add_field(fields, "clip", self.get_value_or_none(model, "clip"))
 
         self.add_n_features(fields, model)
         self.add_feature_names(fields, model)
