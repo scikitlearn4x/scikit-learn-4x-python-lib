@@ -18,6 +18,11 @@ class MultiLabelBinarizerSerializer(BaseSerializer):
             classes_ = classes_.tolist()
         self.add_field(fields, "classes_", classes_)
 
-        self.add_field(fields, "_cached_dict", self.get_value_or_none(model, "_cached_dict"))
-
         return fields
+
+    def append_field_to_buffer(self, buffer, name, value):
+        buffer.append_string(name)
+        if name == 'classes_':
+            buffer.append_list(value)
+        else:
+            buffer.append_data(value)
