@@ -21,7 +21,13 @@ class StandardScalerSerializer(BaseSerializer):
 
         n_samples_seen_ = self.get_value_or_none(model, 'n_samples_seen_')
         if isinstance(n_samples_seen_, np.int64):
-            n_samples_seen_ = [n_samples_seen_] * model.scale_.shape[0]
+            feature_count = None
+            if model.scale_ is not None:
+                feature_count = model.scale_.shape[0]
+            elif model.mean_ is not None:
+                feature_count = model.mean_.shape[0]
+
+            n_samples_seen_ = [n_samples_seen_] * feature_count
             n_samples_seen_ = np.array(n_samples_seen_)
         else:
             n_samples_seen_ = np.array(n_samples_seen_)
