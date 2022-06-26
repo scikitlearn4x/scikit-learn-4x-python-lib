@@ -27,4 +27,4 @@ test_data = {
     "transformed": transformed,
 }
 
-save_scikit_learn_model({'preprocessing_to_test': preprocessing}, "/Users/yektaie/Documents/Unit Test Generation/binaries/1.0.2/3.8/standard_scaler_without_standard_deviation_centering.skx", test_data)
+save_scikit_learn_model({'preprocessing_to_test': preprocessing}, "", test_data)
