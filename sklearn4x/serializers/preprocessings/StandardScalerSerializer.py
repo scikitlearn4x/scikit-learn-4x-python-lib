@@ -4,7 +4,7 @@
 # Scaffolded from: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html#sklearn.preprocessing.StandardScaler
 # ==================================================================
 from sklearn4x.core.BaseSerializer import BaseSerializer
-
+import numpy as np
 
 class StandardScalerSerializer(BaseSerializer):
     def identifier(self):
@@ -18,7 +18,14 @@ class StandardScalerSerializer(BaseSerializer):
         self.add_field(fields, "var_", self.get_value_or_none(model, "var_"))
         self.add_field(fields, "with_mean", self.get_value_or_none(model, "with_mean"))
         self.add_field(fields, "with_std", self.get_value_or_none(model, "with_std"))
-        self.add_field(fields, "n_samples_seen_", self.get_value_or_none(model, "n_samples_seen_"))
+
+        n_samples_seen_ = self.get_value_or_none(model, 'n_samples_seen_')
+        if isinstance(n_samples_seen_, np.int64):
+            n_samples_seen_ = [n_samples_seen_] * model.scale_.shape[0]
+            n_samples_seen_ = np.array(n_samples_seen_)
+        else:
+            n_samples_seen_ = np.array(n_samples_seen_)
+        self.add_field(fields, "n_samples_seen_", n_samples_seen_)
 
         self.add_n_features(fields, model)
         self.add_feature_names(fields, model)

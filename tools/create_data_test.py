@@ -54,9 +54,9 @@ def print_array(array, name):
 
 
 if __name__ == '__main__':
-    arr1 = np.array(np.random.random((5, 2)), dtype=np.float64)
-    arr2 = np.array([1, 2], dtype=np.float64)
+    arr1 = np.array(np.random.random((3,2,2)), dtype=np.float64)
+    arr2 = np.array(np.random.random((1,2,2)), dtype=np.float64)
 
-    print_array(arr1, 'arr1')
-    print_array(arr2, 'arr2')
-    print_array(arr2 - arr1, 'expected')
+    print_array(arr1, 'array1')
+    print_array(arr2, 'array2')
+    print_array(arr2 * arr1, 'expected')
