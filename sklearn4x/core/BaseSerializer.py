@@ -9,13 +9,27 @@ class BaseSerializer:
         pass
 
     def serialize_model(self, buffer: BinaryBuffer, model_name, model, version):
+        from sklearn4x.serializers.serializers_list import LIST_OF_SERIALIZERS
         fields = self.get_fields_to_be_serialized(model, version)
 
-        buffer.append_string(model_name)
+        if model_name is not None:
+            buffer.append_string(model_name)
+
         buffer.append_int(len(fields))
         for name, value in fields:
-            buffer.append_string(name)
-            buffer.append_data(value)
+            _type = type(value)
+            if _type in LIST_OF_SERIALIZERS.keys():
+                buffer.append_string('@@embedded_object@@')
+                buffer.append_string(name)
+
+                serializer = LIST_OF_SERIALIZERS[_type]
+                serializer.serialize_model(buffer, None, value, version)
+            else:
+                self.append_field_to_buffer(buffer, name, value)
+
+    def append_field_to_buffer(self, buffer, name, value):
+        buffer.append_string(name)
+        buffer.append_data(value)
 
     @abstractmethod
     def get_fields_to_be_serialized(self, model, version):
@@ -31,7 +45,16 @@ class BaseSerializer:
         if hasattr(model, 'feature_names_in_'):
             self.add_field(fields, 'feature_names', self.to_array_of_string(model.feature_names_in_))
 
+    def get_value_or_none(self, model, attribute):
+        if hasattr(model, attribute):
+            return getattr(model, attribute)
+
+        return None
+
     def add_field(self, fields, name, value, version=None, min_version=None, max_version=None):
+        if value is None:
+            return
+
         if version is None and min_version is None and max_version is None:
             fields.append((name, value))
         elif min_version is None and max_version is not None and self.is_version_higher(max_version, version):

@@ -1,3 +1,18 @@
+## 0.0.4
+Added support for the preprocessing classes:
+
+* LabelEncoder
+* LabelBinarizer
+* MultiLabelBinarizer
+* MinMaxScaler
+* StandardScaler
+* MaxAbsScaler
+* RobustScaler
+* Normalizer
+* Binarizer
+* QuantileTransformer
+* PowerTransformer
+
 ## 0.0.3
 
 Finalized the Naive Bayes classifiers:
